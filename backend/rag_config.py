@@ -22,10 +22,10 @@ DATABASE_DIR = BASE_DIR / "database"
 
 COLLECTION_NAME = "muungano_documents"
 
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 200
-TOP_K = 10
-FETCH_K = 50
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "800"))
+CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "150"))
+TOP_K = int(os.getenv("TOP_K", "8"))
+FETCH_K = int(os.getenv("FETCH_K", "60"))
 
 USE_LLM = env_bool("USE_LLM", True)
 LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
@@ -56,3 +56,5 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "").strip()
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "MuunganoHub").strip() or "MuunganoHub"
 APP_URL = os.getenv("APP_URL", "http://127.0.0.1:8001").strip() or "http://127.0.0.1:8001"
+
+ADMIN_EMAILS = [e.strip().lower() for e in os.getenv("ADMIN_EMAILS", "").split(",") if e.strip()]
