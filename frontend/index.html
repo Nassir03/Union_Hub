@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en" class="notranslate" translate="no">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#102a43" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="MuunganoHub" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="google" content="notranslate" />
+    <title>MuunganoHub</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/app-icon-192.png" type="image/png" />
+    <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/app-icon-192.png" />
+    <link rel="stylesheet" href="styles.css?v=20260619-profile-photo" />
+  </head>
+  <body translate="no">
+    <main class="app-shell">
+      <section class="auth-view" id="authView">
+        <div class="brand-panel">
+          <img class="brand-visual" src="assets/union-pattern.svg" alt="MuunganoHub learning visual" />
+          <div class="brand-mark notranslate" translate="no">MH</div>
+          <h1 class="notranslate" translate="no">MuunganoHub</h1>
+          <p>A youth-focused Union education platform with history, leaders, audio stories, images, videos, and a source-grounded chatbot.</p>
+        </div>
+
+        <div class="auth-panel">
+          <div class="auth-card-brand">
+            <div class="auth-logo-wrap">
+              <img src="assets/app-icon.svg" alt="" />
+            </div>
+            <strong class="notranslate" translate="no">Muungano<span>Hub</span></strong>
+            <p>Jifunze. Elewa. Shiriki.</p>
+          </div>
+
+          <label class="language-field">
+            <span data-i18n="languageLabel">Language</span>
+            <select id="languageSelect">
+              <option value="en">English</option>
+              <option value="sw">Swahili</option>
+            </select>
+          </label>
+
+          <div class="auth-tabs" role="tablist">
+            <button class="tab-button active" id="loginTab" type="button" data-i18n="loginTab">Login</button>
+            <button class="tab-button" id="registerTab" type="button" data-i18n="registerTab">Register</button>
+          </div>
+
+          <form class="auth-form" id="loginForm">
+            <label>
+              <span data-i18n="emailLabel">Email</span>
+              <input autocomplete="email" id="loginEmail" name="email" type="email" required pattern="[a-zA-Z0-9._%+\-]+@gmail\.com" title="Must be a Gmail address ending with @gmail.com" />
+            </label>
+            <label>
+              <span data-i18n="passwordLabel">Password</span>
+              <input autocomplete="current-password" id="loginPassword" name="password" type="password" required minlength="8" title="At least 8 characters with uppercase, lowercase, number, and symbol" />
+            </label>
+            <button class="text-button auth-link-button" id="forgotPasswordButton" type="button" data-i18n="forgotPasswordButton">Forgot password?</button>
+            <button class="primary-button" type="submit" data-i18n="loginButton">Login</button>
+          </form>
+
+          <form class="auth-form hidden" id="passwordResetForm">
+            <p class="auth-helper" data-i18n="passwordResetHelp">Enter your account email. We will send a reset code, then you can create a new password.</p>
+            <label>
+              <span data-i18n="emailLabel">Email</span>
+              <input autocomplete="email" id="resetEmail" name="email" type="email" required pattern="[a-zA-Z0-9._%+\-]+@gmail\.com" title="Must be a Gmail address ending with @gmail.com" />
+            </label>
+            <button class="secondary-button" id="requestResetButton" type="button" data-i18n="sendResetCodeButton">Send reset code</button>
+            <label>
+              <span data-i18n="resetCodeLabel">Reset code</span>
+              <input autocomplete="one-time-code" id="resetToken" name="token" type="text" inputmode="numeric" maxlength="8" />
+            </label>
+            <label>
+              <span data-i18n="newPasswordLabel">New password</span>
+              <input autocomplete="new-password" id="resetNewPassword" name="new_password" type="password" minlength="8" />
+            </label>
+            <label>
+              <span data-i18n="confirmNewPasswordLabel">Confirm new password</span>
+              <input autocomplete="new-password" id="resetConfirmPassword" name="confirm_password" type="password" minlength="8" />
+            </label>
+            <button class="primary-button" type="submit" data-i18n="resetPasswordButton">Reset password</button>
+            <button class="text-button auth-link-button" id="backToLoginButton" type="button" data-i18n="backToLoginButton">Back to login</button>
+          </form>
+
+          <form class="auth-form hidden" id="registerForm">
+            <label>
+              <span data-i18n="nameLabel">Full name</span>
+              <input autocomplete="name" id="registerName" name="name" type="text" required minlength="2" />
+            </label>
+            <label>
+              <span data-i18n="emailLabel">Email</span>
+              <input autocomplete="email" id="registerEmail" name="email" type="email" required pattern="[a-zA-Z0-9._%+\-]+@gmail\.com" title="Must be a Gmail address ending with @gmail.com" />
+            </label>
+            <label>
+              <span data-i18n="passwordLabel">Password</span>
+              <input autocomplete="new-password" id="registerPassword" name="password" type="password" required minlength="8" title="At least 8 characters with uppercase, lowercase, number, and symbol" />
+            </label>
+            <button class="primary-button" type="submit" data-i18n="registerButton">Create account</button>
+          </form>
+
+          <p class="status-message" id="authStatus" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="platform-view hidden" id="platformView">
+        <aside class="sidebar app-rail" aria-label="MuunganoHub overview">
+          <div>
+            <button class="brand-row profile-shortcut" data-page="profile" type="button" aria-label="Open profile">
+              <div class="brand-mark small notranslate" translate="no">MH</div>
+              <div>
+                <strong class="notranslate" translate="no">MuunganoHub</strong>
+                <span id="userEmail"></span>
+              </div>
+            </button>
+
+            <div class="rail-photo" aria-hidden="true">
+              <img src="assets/nyerere-founder.jpg" alt="" />
+              <img src="assets/abeid-karume-founder.webp" alt="" />
+              <span>Union knowledge, built for youth.</span>
+            </div>
+
+          </div>
+
+          <div class="sidebar-actions">
+            <button class="ghost-button" id="logoutButton" type="button" data-i18n="logoutButton">Logout</button>
+          </div>
+        </aside>
+
+        <section class="content-shell">
+          <header class="topbar">
+            <div class="topbar-brand">
+              <img class="topbar-logo" src="assets/app-icon.svg" alt="" />
+              <div>
+                <strong class="notranslate" translate="no">Muungano<span>Hub</span></strong>
+                <small id="pageTitle">Home</small>
+              </div>
+            </div>
+            <div class="topbar-title">
+              <p class="eyebrow" data-i18n="competitionEyebrow">UBUNIFU WA MFUMO WA ELIMU YA MUUNGANO KWA UMMA</p>
+              <h2>Jifunze Muungano</h2>
+            </div>
+            <div class="topbar-actions">
+              <nav class="sample-topnav" aria-label="Primary navigation">
+                <button class="sample-nav-link" data-page="home" type="button">Home</button>
+                <button class="sample-nav-link" data-page="chatbot" type="button">AI Tutor</button>
+                <button class="sample-nav-link" data-page="history" type="button">Learn</button>
+                <button class="sample-nav-link" data-page="quiz" type="button">Quiz</button>
+                <button class="sample-nav-link" data-page="passport" type="button">Passport</button>
+                <button class="sample-nav-link" data-page="safari" type="button">Safari</button>
+                <button class="sample-nav-link" data-page="connect" type="button">Connect</button>
+                <button class="sample-nav-link" data-page="dashboard" type="button">Dashboard</button>
+              </nav>
+              <div class="sample-controls">
+                <button class="sample-language-button" id="topLanguageButton" type="button" aria-label="Switch language">
+                  <span class="globe-icon" aria-hidden="true"></span>
+                  <span id="topLanguageLabel">Swahili</span>
+                </button>
+                <button class="sample-login-button" id="topAuthButton" type="button">Login / Sign Up</button>
+              </div>
+              <div class="menu-wrap">
+                <button class="icon-menu-button" id="mainMenuButton" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mainMenuPanel">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </button>
+                <nav class="nav-list menu-panel" id="mainMenuPanel" aria-label="Main navigation">
+                  <button class="nav-button" data-page="home" type="button">Home</button>
+                  <button class="nav-button" data-page="chatbot" type="button">AI Tutor</button>
+                  <button class="nav-button" data-page="history" type="button">Learn</button>
+                  <button class="nav-button" data-page="quiz" type="button">Quiz</button>
+                  <button class="nav-button" data-page="passport" type="button">Passport</button>
+                  <button class="nav-button" data-page="safari" type="button">Safari</button>
+                  <button class="nav-button" data-page="connect" type="button">Connect</button>
+                  <button class="nav-button" data-page="dashboard" type="button">Dashboard</button>
+                  <button class="nav-button" data-page="timeline" type="button">Timeline</button>
+                  <button class="nav-button" data-page="media" type="button">Video Gallery</button>
+                  <button class="nav-button" data-page="leaders" type="button">Union Leaders</button>
+                  <button class="nav-button" data-page="audio" type="button">Listen to History</button>
+                  <button class="nav-button" data-page="about" type="button">About</button>
+                  <button class="nav-button" data-page="profile" type="button">Profile</button>
+                  <button class="nav-button" data-page="competition" type="button">Project Pitch</button>
+                  <button class="nav-button nav-logout-button" id="mobileLogoutButton" type="button" data-i18n="logoutButton">Logout</button>
+                </nav>
+              </div>
+            </div>
+          </header>
+
+          <section class="page active" id="page-home"></section>
+          <section class="page" id="page-dashboard"></section>
+          <section class="page" id="page-about"></section>
+          <section class="page" id="page-history"></section>
+          <section class="page" id="page-timeline"></section>
+          <section class="page" id="page-quiz"></section>
+          <section class="page" id="page-passport"></section>
+          <section class="page" id="page-safari"></section>
+          <section class="page" id="page-connect"></section>
+          <section class="page" id="page-leaders"></section>
+          <section class="page" id="page-audio"></section>
+          <section class="page" id="page-media"></section>
+          <section class="page" id="page-profile"></section>
+          <section class="page" id="page-chatbot">
+            <section id="chatTools"></section>
+            <section class="conversation">
+              <div class="messages" id="messages" aria-live="polite">
+                <article class="message assistant">
+                  <div class="avatar">MH</div>
+                  <div class="bubble">
+                    <p id="chatWelcome">Karibu. Uliza kuhusu Muungano, Tanganyika, Zanzibar, Katiba, viongozi au historia husika.</p>
+                  </div>
+                </article>
+              </div>
+
+              <form class="composer" id="chatForm">
+                <textarea id="questionInput" rows="2" maxlength="1000" placeholder="Ask in Swahili or English..." required></textarea>
+                <button class="send-button" id="sendButton" type="submit" data-i18n="sendButton">Send</button>
+              </form>
+              <p class="status-message chat-status" id="chatStatus" aria-live="polite"></p>
+            </section>
+          </section>
+          <section class="page" id="page-competition"></section>
+        </section>
+      </section>
+    </main>
+
+    <script src="quiz-bank.js?v=20260618g"></script>
+    <script src="app.js?v=20260619-profile-photo"></script>
+  </body>
+</html>
