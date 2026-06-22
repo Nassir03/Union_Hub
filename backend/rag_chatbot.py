@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import sys
 
@@ -11,14 +12,20 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 try:
-    from .rag_components import build_answer_from_context, clean_text, format_docs, format_sources, get_chat_llm, get_embeddings
+    from .rag_components import (
+        build_answer_from_context, clean_text, format_docs, format_sources,
+        get_chat_llm, get_embeddings, get_openai_client,
+    )
     from .knowledge_base import FAQ_ENTRIES, build_knowledge_documents, get_area_text, get_learning_area
-    from .rag_config import CHROMA_DIR, CHUNKS_FILE, COLLECTION_NAME, FETCH_K, TOP_K
+    from .rag_config import CHROMA_DIR, CHUNKS_FILE, COLLECTION_NAME, FETCH_K, LLM_MODEL, OFFLINE_MODE, TOP_K, USE_LLM
     from .union_core_facts import INTENT_BLOCKED_SIGNALS, INTENT_RETRIEVAL_QUERIES, UNION_CORE_FACTS, classify_union_intent
 except ImportError:
-    from rag_components import build_answer_from_context, clean_text, format_docs, format_sources, get_chat_llm, get_embeddings
+    from rag_components import (
+        build_answer_from_context, clean_text, format_docs, format_sources,
+        get_chat_llm, get_embeddings, get_openai_client,
+    )
     from knowledge_base import FAQ_ENTRIES, build_knowledge_documents, get_area_text, get_learning_area
-    from rag_config import CHROMA_DIR, CHUNKS_FILE, COLLECTION_NAME, FETCH_K, TOP_K
+    from rag_config import CHROMA_DIR, CHUNKS_FILE, COLLECTION_NAME, FETCH_K, LLM_MODEL, OFFLINE_MODE, TOP_K, USE_LLM
     from union_core_facts import INTENT_BLOCKED_SIGNALS, INTENT_RETRIEVAL_QUERIES, UNION_CORE_FACTS, classify_union_intent
 
 console = Console()
@@ -54,28 +61,33 @@ CONTEXTUALIZE_PROMPT = ChatPromptTemplate.from_messages([
 RAG_PROMPT = ChatPromptTemplate.from_messages([
     (
         "system",
-        """You are MuunganoHub AI Tutor, a civic education assistant for youth in Tanzania and Zanzibar.
+        """You are MuunganoHub AI Tutor — a civic education assistant for youth in Tanzania and Zanzibar.
+You answer ONLY questions about the Union of Tanganyika and Zanzibar, its history, founders, institutions, benefits, challenges, and constitutions.
 
-Answer ONLY from the retrieved context below. Do not use general knowledge or invent facts.
+CRITICAL LANGUAGE RULE:
+- If the user's question is in Swahili, your ENTIRE answer must be in Swahili.
+- If the user's question is in English, your ENTIRE answer must be in English.
+- Never mix languages. Never translate without being asked.
 
-Language rule:
-- If the user asks in Swahili, answer in clear, simple Swahili.
-- If the user asks in English, answer in English.
+USE ONLY THE RETRIEVED CONTEXT BELOW. Do not use general knowledge or invent facts.
 
-Answer structure (use all four parts):
-1. Direct answer — 1 to 2 sentences answering the question directly.
-2. Explanation — 1 to 2 paragraphs with historical or contextual detail from the sources.
-3. Why it matters to youth — 1 to 2 sentences connecting the topic to young people today.
-4. Sources — cite each source you used as [Source N].
+ANSWER STRUCTURE (all five parts required):
+1. Direct answer — 1–2 sentences answering the question directly.
+2. Explanation — 2–3 sentences with key facts from the sources.
+3. Historical or context detail — 2–3 sentences of relevant background.
+4. Why it matters to youth today — 1–2 sentences connecting this topic to young people.
+5. Sources — list each numbered source you used.
 
-Requirements:
-- Write 2 to 4 short paragraphs minimum. Never give a one-sentence answer.
-- Do not mention topics not supported by the retrieved context.
-- Do not invent dates, names, or facts.
-- If the context does not contain enough information to answer well, say exactly:
-  "Sina taarifa za kutosha kwenye nyaraka nilizonazo kujibu swali hili kwa uhakika."
+REQUIREMENTS:
+- Write at least 3 short paragraphs. Never give a one-sentence answer.
+- Use inline citations like [1], [2], [3] throughout your answer. You MUST include at least one.
+- Do not invent dates, names, or facts not present in the context.
+- If the context does not have enough information to answer, say exactly:
+  Swahili: "Sina taarifa za kutosha kwenye nyaraka nilizonazo kujibu swali hilo kwa uhakika."
+  English: "I don't have enough information in my documents to answer this with confidence."
+- End with "Sources:" (English) or "Vyanzo:" (Swahili) listing the numbered sources used.
 
-Context:
+CONTEXT:
 {context}""",
     ),
     MessagesPlaceholder(variable_name="chat_history"),
@@ -179,15 +191,14 @@ def detect_language(text):
 def refusal_message(language):
     if language == "en":
         return (
-            "Sorry, I do not have enough information in the available Union "
-            "references to answer that question. Please ask about the Union, "
-            "the Constitution, Tanganyika, Zanzibar, or Union history."
+            "Sorry, that question is not related to the Union of Tanganyika and Zanzibar. "
+            "Please ask about Union history, the Articles of Union, founders, benefits, "
+            "challenges, constitutions, or Union matters."
         )
-
     return (
-        "Samahani, swali hilo halihusiani na taarifa za Muungano nilizonazo. "
-        "Tafadhali uliza kuhusu Muungano, Katiba, historia ya Tanganyika na "
-        "Zanzibar, au mambo ya Muungano."
+        "Samahani, swali hilo halihusiani na Muungano wa Tanganyika na Zanzibar. "
+        "Tafadhali uliza kuhusu historia ya Muungano, Hati za Muungano, waasisi, "
+        "faida, changamoto, Katiba, au mambo ya Muungano."
     )
 
 
@@ -248,6 +259,7 @@ def source_priority(doc, target_language):
         "ikulu.go.tz",
         "tanzania.go.tz",
         "zanzibar.go.tz",
+        ".go.tz",
     )
     core_union_markers = (
         "articles_of_union",
@@ -580,6 +592,10 @@ class RAGChatbot:
         self.llm = get_chat_llm()
         self.fast_llm = self.llm
         self.chat_history = []
+        print(
+            f"[MuunganoHub] OFFLINE_MODE={OFFLINE_MODE}, USE_LLM={USE_LLM}, "
+            f"LLM_MODEL={LLM_MODEL}, LLM_ACTIVE={self.llm is not None}"
+        )
 
     def finalize_answer(self, answer, question, language):
         return answer
@@ -1446,106 +1462,184 @@ class RAGChatbot:
 
         return " ".join(selected)
 
+    def llm_domain_fallback(self, question, language):
+        """
+        Call OpenAI directly without retrieved context when retrieval is weak
+        but the question is confirmed to be Union-related.
+        Returns None if the LLM is not configured or the call fails.
+        """
+        client = get_openai_client()
+        if client is None:
+            return None
+
+        if language == "sw":
+            system = (
+                "Wewe ni MuunganoHub AI Tutor. Jibu maswali yanayohusu Muungano wa "
+                "Tanganyika na Zanzibar, historia yake, waasisi, taasisi, faida, "
+                "changamoto, na mambo ya Muungano pekee.\n"
+                "Toa jibu la kielimu, la kina, na sahihi kwa Kiswahili rahisi.\n"
+                "Usibuni ukweli kama huna uhakika. Eleza kwa uangalifu na uadilifu.\n"
+                "Jibu lako liwe na aya 2-4. Taja chanzo ukijua (kama Hati za Muungano, "
+                "Katiba, historia rasmi). Kama hujui kwa uhakika, sema hivyo wazi."
+            )
+        else:
+            system = (
+                "You are MuunganoHub AI Tutor. Answer only questions about the Union "
+                "of Tanganyika and Zanzibar, its history, founders, institutions, "
+                "benefits, challenges, and Union matters.\n"
+                "Give a clear, detailed, and accurate educational answer in English.\n"
+                "Do not invent facts if unsure. Be careful and honest.\n"
+                "Your answer should have 2-4 paragraphs. Cite sources you know "
+                "(e.g. Articles of Union, Constitution, official history). "
+                "If you are uncertain about a detail, say so clearly."
+            )
+
+        try:
+            response = client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": question},
+                ],
+                temperature=0.1,
+                max_tokens=900,
+                timeout=30.0,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception:
+            return None
+
     def ask(self, question):
         question = question.strip()
         language = detect_language(question)
         if not question:
             return empty_question_message()
 
+        # ── Step 1: obvious out-of-scope (price, sport, weather, etc.) ────────
         if is_clearly_out_of_scope(question):
             return refusal_message(language)
 
+        # ── Step 2: broad domain gate — non-Union questions refused politely ──
+        if not is_domain_question(question):
+            return refusal_message(language)
+
+        # ── Step 3: trusted core facts via intent classifier (no LLM needed) ─
         intent = classify_union_intent(question)
         if intent != "unrelated":
             intent_answer = self.hybrid_answer(question, intent)
             if intent_answer:
                 return self.finalize_answer(intent_answer, question, language)
 
+        # ── Step 4: teach / learning mode ─────────────────────────────────────
         teach_answer = self.teach_answer(question)
         if teach_answer:
             return self.finalize_answer(teach_answer, question, language)
 
-        date_answer = self.direct_union_date_answer(question)
-        if date_answer:
-            return self.finalize_answer(date_answer, question, language)
+        # ── Step 5: specific direct knowledge answers ──────────────────────────
+        for handler in (
+            self.direct_union_date_answer,
+            self.direct_why_union_formed_answer,
+            self.direct_tanganyika_zanzibar_union_answer,
+            self.direct_benefits_answer,
+            self.direct_leaders_answer,
+            self.direct_faq_answer,
+            self.direct_union_matters_answer,
+            self.direct_revolution_answer,
+            self.direct_person_answer,
+            self.direct_definition_answer,
+        ):
+            direct = handler(question)
+            if direct:
+                return self.finalize_answer(direct, question, language)
 
-        why_formed_answer = self.direct_why_union_formed_answer(question)
-        if why_formed_answer:
-            return self.finalize_answer(why_formed_answer, question, language)
-
-        union_answer = self.direct_tanganyika_zanzibar_union_answer(question)
-        if union_answer:
-            return self.finalize_answer(union_answer, question, language)
-
-        benefits_answer = self.direct_benefits_answer(question)
-        if benefits_answer:
-            return self.finalize_answer(benefits_answer, question, language)
-
-        leaders_answer = self.direct_leaders_answer(question)
-        if leaders_answer:
-            return self.finalize_answer(leaders_answer, question, language)
-
-        faq_answer = self.direct_faq_answer(question)
-        if faq_answer:
-            return self.finalize_answer(faq_answer, question, language)
-
-        matters_answer = self.direct_union_matters_answer(question)
-        if matters_answer:
-            return self.finalize_answer(matters_answer, question, language)
-
-        revolution_answer = self.direct_revolution_answer(question)
-        if revolution_answer:
-            return self.finalize_answer(revolution_answer, question, language)
-
-        person_answer = self.direct_person_answer(question)
-        if person_answer:
-            return self.finalize_answer(person_answer, question, language)
-
-        direct_answer = self.direct_definition_answer(question)
-        if direct_answer:
-            return self.finalize_answer(direct_answer, question, language)
-
-        if not is_domain_question(question):
-            return refusal_message(language)
-
+        # ── Step 6: RAG retrieval (vector + keyword, query expansion) ─────────
         standalone_question = self.contextualize_question(question)
         docs = self.retrieve(standalone_question)
 
-        if not docs or not enough_context(standalone_question, docs):
-            return refusal_message(language)
-
-        llm_result = None
-        try:
-            llm_result = build_answer_from_context(
-                question=question,
-                docs=[doc.page_content for doc in docs],
-                metas=[doc.metadata for doc in docs],
-            )
-        except Exception:
+        # ── Step 7: LLM with retrieved context (best path when docs are good) ─
+        if docs and enough_context(standalone_question, docs):
             llm_result = None
-
-        if llm_result:
-            answer = llm_result["answer"]
-        elif self.llm:
-            chain = RAG_PROMPT | self.llm | StrOutputParser()
             try:
-                answer = chain.invoke({
-                    "context": format_docs(docs),
-                    "chat_history": self.chat_history,
-                    "question": question,
-                })
+                llm_result = build_answer_from_context(
+                    question=question,
+                    docs=[doc.page_content for doc in docs],
+                    metas=[doc.metadata for doc in docs],
+                )
             except Exception:
-                answer = self.extractive_answer(standalone_question, docs)
-        else:
-            answer = self.extractive_answer(standalone_question, docs)
+                llm_result = None
 
-        source_heading = "Sources" if language == "en" else "Vyanzo"
-        answer_with_sources = f"{answer}\n\n{source_heading}:\n{format_sources(docs)}"
-        self.chat_history.append(HumanMessage(content=question))
-        self.chat_history.append(AIMessage(content=answer))
-        self.chat_history = self.chat_history[-20:]
+            if llm_result:
+                answer = llm_result["answer"]
+                if re.search(r"\[\d+\]", answer):
+                    source_heading = "Sources" if language == "en" else "Vyanzo"
+                    lower_answer = answer.lower()
+                    if "sources:" in lower_answer or "vyanzo:" in lower_answer:
+                        answer_with_sources = answer
+                    else:
+                        answer_with_sources = f"{answer}\n\n{source_heading}:\n{format_sources(docs)}"
+                    self.chat_history.append(HumanMessage(content=question))
+                    self.chat_history.append(AIMessage(content=answer))
+                    self.chat_history = self.chat_history[-20:]
+                    return self.finalize_answer(answer_with_sources, question, language)
 
-        return self.finalize_answer(answer_with_sources, question, language)
+            # LangChain chain fallback (also uses retrieved context)
+            if self.llm:
+                chain = RAG_PROMPT | self.llm | StrOutputParser()
+                try:
+                    answer = chain.invoke({
+                        "context": format_docs(docs),
+                        "chat_history": self.chat_history,
+                        "question": question,
+                    })
+                    if answer and len(answer.strip()) > 30:
+                        source_heading = "Sources" if language == "en" else "Vyanzo"
+                        lower_answer = answer.lower()
+                        if "sources:" in lower_answer or "vyanzo:" in lower_answer:
+                            answer_with_sources = answer
+                        else:
+                            answer_with_sources = f"{answer}\n\n{source_heading}:\n{format_sources(docs)}"
+                        self.chat_history.append(HumanMessage(content=question))
+                        self.chat_history.append(AIMessage(content=answer))
+                        self.chat_history = self.chat_history[-20:]
+                        return self.finalize_answer(answer_with_sources, question, language)
+                except Exception:
+                    pass
+
+        # ── Step 8: LLM domain fallback — Union topic but weak/no retrieved context
+        fallback_answer = self.llm_domain_fallback(question, language)
+        if fallback_answer:
+            self.chat_history.append(HumanMessage(content=question))
+            self.chat_history.append(AIMessage(content=fallback_answer))
+            self.chat_history = self.chat_history[-20:]
+            return self.finalize_answer(fallback_answer, question, language)
+
+        # ── Step 9: extractive answer from whatever docs we have ──────────────
+        if docs:
+            extr = self.extractive_answer(standalone_question, docs)
+            if extr:
+                source_heading = "Sources" if language == "en" else "Vyanzo"
+                lower_extr = extr.lower()
+                if "sources:" in lower_extr or "vyanzo:" in lower_extr:
+                    answer_with_sources = extr
+                else:
+                    answer_with_sources = f"{extr}\n\n{source_heading}:\n{format_sources(docs)}"
+                self.chat_history.append(HumanMessage(content=question))
+                self.chat_history.append(AIMessage(content=extr))
+                self.chat_history = self.chat_history[-20:]
+                return self.finalize_answer(answer_with_sources, question, language)
+
+        # ── Step 10: final polite "not enough info" (never a harsh refusal) ───
+        if language == "en":
+            return (
+                "I don't have enough information in my documents to answer this question "
+                "with full confidence. Please try a more specific question about the Union "
+                "of Tanganyika and Zanzibar, its history, founders, or institutions."
+            )
+        return (
+            "Sina taarifa za kutosha kwenye nyaraka nilizonazo kujibu swali hilo kwa uhakika. "
+            "Tafadhali jaribu swali lingine kuhusu historia ya Muungano wa Tanganyika na "
+            "Zanzibar, waasisi wake, au taasisi zake."
+        )
 
 
 def main():
