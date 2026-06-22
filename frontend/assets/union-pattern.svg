@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-labelledby="title desc" translate="no">
+  <title id="title">MuunganoHub education visual</title>
+  <desc id="desc">Abstract educational visual showing two islands, mainland coastline, books, people, and connecting paths.</desc>
+  <rect width="900" height="620" fill="#0d4f4b"/>
+  <circle cx="760" cy="110" r="74" fill="#d79a21" opacity=".92"/>
+  <path d="M80 455c105-62 206-79 301-51 86 25 157 18 235-22 69-36 130-44 204-16v254H80z" fill="#113f3a"/>
+  <path d="M58 412c117-68 231-86 340-54 98 29 176 21 264-25 78-41 148-50 232-18" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity=".28"/>
+  <path d="M92 380c95-47 190-57 283-27 91 30 169 18 247-28 66-39 129-49 195-27" fill="none" stroke="#d79a21" stroke-width="8" stroke-linecap="round" opacity=".82"/>
+  <g transform="translate(132 138)">
+    <rect x="0" y="110" width="220" height="142" rx="12" fill="#ffffff" opacity=".95"/>
+    <path d="M0 122c60-26 120-24 180 0v120c-60-28-120-28-180 0z" fill="#e8f4ef"/>
+    <path d="M42 150h110M42 180h130M42 210h92" stroke="#0f766e" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="224" cy="66" r="42" fill="#f3b13f"/>
+    <path d="M185 116c13-42 68-42 81 0" fill="#ffffff"/>
+  </g>
+  <g transform="translate(512 150)">
+    <circle cx="88" cy="76" r="58" fill="#ffffff" opacity=".95"/>
+    <path d="M54 80c18 19 48 20 68 0" fill="none" stroke="#0f766e" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="66" cy="62" r="7" fill="#0d4f4b"/>
+    <circle cx="112" cy="62" r="7" fill="#0d4f4b"/>
+    <path d="M10 180c18-62 136-62 154 0z" fill="#d79a21"/>
+  </g>
+  <g fill="#ffffff" opacity=".9">
+    <circle cx="410" cy="210" r="10"/>
+    <circle cx="450" cy="250" r="8"/>
+    <circle cx="492" cy="226" r="7"/>
+    <circle cx="365" cy="260" r="6"/>
+  </g>
+  <path d="M322 264c61-52 128-63 203-32" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 18" opacity=".84"/>
+  <text x="96" y="92" fill="#ffffff" font-family="Arial, sans-serif" font-size="48" font-weight="800" translate="no">MuunganoHub</text>
+  <text x="98" y="124" fill="#cce8e3" font-family="Arial, sans-serif" font-size="22">Elimu ya Muungano kwa vijana</text>
+</svg>
