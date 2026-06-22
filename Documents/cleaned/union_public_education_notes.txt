@@ -1,0 +1,9 @@
+Title: Union Public Education Notes
+Source URL: local curated education note
+Source Type: curated
+
+A Union education platform should help the public learn through questions, source-cited answers, timelines, quizzes, audio, video, and simple explanations. For young people, interactive learning is often more effective than long historical text alone.
+
+MuunganoHub uses a RAG approach: user question, domain check, source retrieval from the knowledge base, answer generation, and source citation. This helps avoid hallucination and keeps the chatbot focused on Union education.
+
+Mfumo wa elimu ya Muungano unapaswa kusaidia umma kujifunza kupitia maswali, majibu yenye vyanzo, timeline, quiz, audio, video na maelezo rahisi.

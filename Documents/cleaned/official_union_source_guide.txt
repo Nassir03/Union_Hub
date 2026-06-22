@@ -1,0 +1,63 @@
+Title: Official Union Source Guide
+Source URL: local curated source guide with official references
+Source Type: official
+
+Official Union reference guide for MuunganoHub.
+
+This guide summarizes high-confidence reference points that should be preferred when answering common questions about the Union of Tanganyika and Zanzibar. It is designed to help the Ask AI feature retrieve official and curated evidence before broad web references.
+
+Core facts:
+
+The Union joined Tanganyika and Zanzibar into one sovereign state. The Articles of Union were signed on 22 April 1964 by Mwalimu Julius Kambarage Nyerere for Tanganyika and Sheikh Abeid Amani Karume for Zanzibar.
+
+The Union was formally established on 26 April 1964. This is the national Union Day and the key date to use when a user asks when the Union was formed.
+
+The country was first known as the United Republic of Tanganyika and Zanzibar. The name United Republic of Tanzania was later adopted by combining Tanganyika and Zanzibar.
+
+The Constitution of the United Republic of Tanzania of 1977 is the main constitutional reference for the structure of the United Republic, Union institutions, citizenship, national authority, Parliament, the Presidency, and the list of Union matters.
+
+The Constitution of Zanzibar is the main constitutional reference for the Revolutionary Government of Zanzibar and Zanzibar institutions within the wider framework of the United Republic.
+
+Primary founders:
+
+Julius Kambarage Nyerere was the President of Tanganyika and became the first President of the United Republic after the Union. He is one of the two principal founders of the Union.
+
+Abeid Amani Karume was the President of Zanzibar and Chairman of the Revolutionary Council. He is one of the two principal founders of the Union.
+
+Important dates:
+
+9 December 1961: Tanganyika became independent.
+
+12 January 1964: The Zanzibar Revolution took place and led to the Revolutionary Government of Zanzibar under Abeid Amani Karume.
+
+22 April 1964: The Articles of Union were signed.
+
+26 April 1964: The Union of Tanganyika and Zanzibar was formally established.
+
+29 October 1964: The name Tanzania was adopted for the United Republic.
+
+How to answer:
+
+When a question asks "What is the Union?", answer that it is the political and constitutional union between Tanganyika and Zanzibar that created the United Republic of Tanzania.
+
+When a question asks "When was the Union formed?", answer 26 April 1964, and mention that the Articles of Union were signed on 22 April 1964.
+
+When a question asks "Who founded the Union?", answer Julius Kambarage Nyerere and Abeid Amani Karume.
+
+When a question asks about evidence, cite the Articles of Union, the Constitution of the United Republic of Tanzania, the Constitution of Zanzibar, and official government Union education materials before Wikipedia or general web pages.
+
+When a question asks about challenges, answer carefully. Explain that Union challenges usually concern interpretation of Union matters, institutional coordination, public understanding, resources, and political discussion. Do not present rumours as facts. Encourage reference to constitutional and official public education sources.
+
+When a question asks about youth, connect the Union to peace, citizenship, education, movement, national identity, business, employment, Kiswahili, and shared civic responsibility.
+
+Official reference URLs for users and reviewers:
+
+Parliament of Tanzania constitution reference: https://bunge.go.tz/search/constitution-of-tanzania
+
+Parliament of Tanzania history page: https://bunge.go.tz/index.php/pages/history
+
+Vice President's Office Union information: https://www.vpo.go.tz
+
+Government portal of the United Republic of Tanzania: https://www.tanzania.go.tz
+
+Government of Zanzibar portal: https://www.zanzibar.go.tz
