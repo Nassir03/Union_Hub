@@ -2888,7 +2888,7 @@ async function uploadProfilePhoto(file) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("/auth/profile/photo", {
+  const response = await fetch(appUrl("/auth/profile/photo"), {
     method: "POST",
     headers: { Authorization: `Bearer ${state.token}` },
     body: formData,
