@@ -1,4 +1,4 @@
-const CACHE_NAME = "muunganohub-mobile-v62-profile-photo";
+const CACHE_NAME = "muunganohub-mobile-v63";
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const BASE_PATH = SCOPE_PATH === "" ? "" : SCOPE_PATH;
 const withBase = (path) => `${BASE_PATH}${path}`;
@@ -7,7 +7,7 @@ const APP_SHELL = [
   withBase("/index.html"),
   withBase("/styles.css?v=20260619-profile-photo"),
   withBase("/quiz-bank.js?v=20260618g"),
-  withBase("/app.js?v=20260619-profile-photo"),
+  withBase("/app.js?v=20260623"),
   withBase("/manifest.webmanifest"),
   withBase("/assets/app-icon-192.png"),
   withBase("/assets/app-icon-512.png"),
@@ -69,7 +69,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (pathname.startsWith("/static/uploads/")) {
+  if (pathname.startsWith("/static/uploads/") || pathname.startsWith("/uploads/")) {
     event.respondWith(fetch(request));
     return;
   }
