@@ -2844,10 +2844,24 @@ function renderProfile() {
 function profileAvatarMarkup(photo, variant = "") {
   const className = `profile-avatar ${variant === "preview" ? "profile-avatar-preview" : ""}`.trim();
   if (photo) {
-    return `<img class="${className}" src="${escapeAttribute(photo)}" alt="${state.language === "sw" ? "Picha ya profile" : "Profile photo"}" onerror="this.onerror=null;this.src=''" />`;
+    return `<img class="${className}" src="${escapeAttribute(appUrl(photo))}" alt="${state.language === "sw" ? "Picha ya profile" : "Profile photo"}" onerror="this.onerror=null;this.style.display='none'" />`;
   }
   return `<div class="brand-mark ${className} notranslate" translate="no">MH</div>`;
 }
+
+document.addEventListener("click", (event) => {
+  const trigger = event.target.closest(
+    ".profile-avatar-label, .profile-photo-button, label[for='profilePhotoInput']"
+  );
+
+  if (!trigger) return;
+
+  const input = document.querySelector("#profilePhotoInput");
+  if (!input) return;
+
+  event.preventDefault();
+  input.click();
+});
 
 function escapeAttribute(value) {
   return String(value)
@@ -2907,6 +2921,56 @@ function updateProfilePhotoPreview(photo, fileName = "") {
     avatar.replaceWith(wrapper.firstElementChild);
   });
 }
+
+document.addEventListener("change", async (event) => {
+  const input = event.target;
+
+  if (!input.matches("#profilePhotoInput")) return;
+
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const status = document.querySelector("#profilePhotoStatusMessage");
+
+  try {
+    if (status) {
+      status.textContent =
+        state.language === "sw"
+          ? "Inapakia picha..."
+          : "Uploading photo...";
+    }
+
+    const result = await uploadProfilePhoto(file);
+
+      localStorage.setItem(
+        "muunganohub_user",
+        JSON.stringify(state.user)
+      );
+
+      updateProfilePhotoPreview(
+        result.photo_url,
+        file.name
+      );
+
+      if (status) {
+        status.textContent =
+          state.language === "sw"
+            ? "Picha imefanikiwa kupakiwa."
+            : "Photo uploaded successfully.";
+      }
+    }
+  } catch (err) {
+    console.error(err);
+
+    if (status) {
+      status.textContent =
+        err.message ||
+        (state.language === "sw"
+          ? "Imeshindikana kupakia picha."
+          : "Failed to upload photo.");
+    }
+  }
+});
 
 function mediaThumbMarkup(video, index) {
   const label = state.language === "sw" ? `Somo ${index + 1}` : `Lesson ${index + 1}`;
