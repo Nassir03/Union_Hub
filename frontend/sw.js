@@ -1,4 +1,4 @@
-const CACHE_NAME = "muunganohub-mobile-v61-profile-photo";
+const CACHE_NAME = "muunganohub-mobile-v62-profile-photo";
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const BASE_PATH = SCOPE_PATH === "" ? "" : SCOPE_PATH;
 const withBase = (path) => `${BASE_PATH}${path}`;
@@ -66,6 +66,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   const pathname = appPath(url.pathname);
   if (pathname.startsWith("/chat") || pathname.startsWith("/auth") || pathname.startsWith("/tts")) {
+    return;
+  }
+
+  if (pathname.startsWith("/static/uploads/")) {
+    event.respondWith(fetch(request));
     return;
   }
 
