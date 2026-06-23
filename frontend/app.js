@@ -2346,10 +2346,10 @@ function sourceName(url) {
   if (url.includes("katiba-zanzibar-1984.pdf")) return state.language === "sw" ? "Katiba ya Zanzibar 1984" : "1984 Zanzibar Constitution PDF";
   if (url.includes("muungano-final-2024.pdf")) return state.language === "sw" ? "Hotuba ya Miaka 60 ya Muungano" : "60 Years of the Union PDF";
   if (url.includes("wikipedia.org")) return "Wikipedia snapshot";
-  if (url.includes("osg.go.tz")) return state.language === "sw" ? "Katiba ya JMT 1977" : "1977 Constitution";
-  if (url.includes("elibrary.lrct.go.tz")) return state.language === "sw" ? "Katiba ya Zanzibar 1984" : "1984 Zanzibar Constitution";
+  if (url.includes("katiba-jamhuri-ya-muungano-1977.pdf")) return state.language === "sw" ? "Katiba ya JMT 1977" : "1977 Constitution";
+  if (url.includes("katiba-zanzibar-1984.pdf")) return state.language === "sw" ? "Katiba ya Zanzibar 1984" : "1984 Zanzibar Constitution";
   if (url.includes("tzaffairs.org")) return "Tanzania Affairs";
-  if (url.includes("nbs.go.tz")) return state.language === "sw" ? "Sensa ya Watu na Makazi 2022" : "2022 Census";
+  if (url.includes("https://www.nbs.go.tz/nbs/takwimu/Census2022/matokeomwanzooktoba2022.pdf")) return state.language === "sw" ? "Sensa ya Watu na Makazi 2022" : "2022 Census";
   if (url.includes("tanzania.go.tz")) return state.language === "sw" ? "Tovuti Kuu ya Serikali" : "Tanzania Government Portal";
   if (url.includes("parliament.go.tz")) return state.language === "sw" ? "Bunge la Tanzania" : "Parliament of Tanzania";
   if (url.includes("zanzibarassembly.go.tz")) return state.language === "sw" ? "Baraza la Wawakilishi Zanzibar" : "Zanzibar House of Representatives";
