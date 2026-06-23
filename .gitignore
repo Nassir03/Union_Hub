@@ -1,52 +1,39 @@
-# Git
-.git
-.agents
-.codex
-.cloude
+# Secrets — never commit
+.env
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-*.pyd
-.Python
-
-# Virtual environments
 .venv/
 venv/
-env/
+*.egg-info/
+dist/
+build/
+
+# ChromaDB vector store (large binary data)
+backend/chroma_db/
+
+# Uploaded user files
+uploads/
 
 # Logs
 *.log
+server_stdout.log
+server_stderr.log
 
-# Environment secrets
-.env
-.env.*
-
-# Vector DB
-vector_db/
-shared_proto_db/
-
-# Uploads
-uploads/
-uploads/profile_photos/
-
-# Reports
+# Reports / generated outputs
 reports/
 
-# Documents
-Documents/raw/
-Documents/__pycache__/
+# Test temp files
+tmp/
 
-# Backend cache
-backend/__pycache__/
+# Database files
+*.sqlite3
+*.db
 
-# Frontend
-frontend/**/*.map
-
-# Screenshots/tests
-verify_*.png
-verify_test.py
+# Node
+node_modules/
 
 # OS
 .DS_Store
