@@ -2576,11 +2576,11 @@ function renderLeaders() {
 function leadershipCardMarkup(name, role, region, period, text, image, url) {
   const safeUrl = url ? attrUrl(url) : "";
   const photoBlock = safeUrl
-    ? `<a class="leader-image-link" href="${safeUrl}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(name)}">${leaderPhotoMarkup(name, image)}</a>`
+    ? `<a class="leader-image-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer" data-leader-link="true" aria-label="${escapeAttribute(name)}">${leaderPhotoMarkup(name, image)}</a>`
     : leaderPhotoMarkup(name, image);
   const readMoreLabel = state.language === "sw" ? "Soma zaidi" : "Read more";
   const readMoreBlock = safeUrl
-    ? `<a class="primary-link leader-read-link" href="${safeUrl}" target="_blank" rel="noreferrer">${readMoreLabel}</a>`
+    ? `<a class="primary-link leader-read-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer" data-leader-link="true">${readMoreLabel}</a>`
     : "";
   return `
     <article class="leader-card leadership-card">
@@ -2598,6 +2598,19 @@ function leadershipCardMarkup(name, role, region, period, text, image, url) {
     </article>
   `;
 }
+
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("[data-leader-link='true']");
+  if (!link) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const href = link.getAttribute("href");
+  if (!href) return;
+
+  window.open(href, "_blank", "noopener,noreferrer");
+});
 
 function leaderCardMarkup(name, role, region, text, image, url) {
   const hasLink = !OFFLINE_MODE && Boolean(url);
@@ -2637,6 +2650,7 @@ function initials(name) {
     .join("")
     .toUpperCase();
 }
+
 
 function renderAudio() {
   const data = content[state.audioLanguage].audio;
