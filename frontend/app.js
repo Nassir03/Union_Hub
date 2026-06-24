@@ -2790,7 +2790,7 @@ function renderProfile() {
             <p class="profile-identity-email">${escapeAttribute(displayEmail)}</p>
           </div>
           <div class="profile-avatar-actions">
-            <label for="profilePhotoInput" class="secondary-button compact profile-photo-trigger">${changePhotoLabel}</label>
+            <label for="profilePhotoInput" class="secondary-button compact">${changePhotoLabel}</label>
             <button class="text-button ${photo ? "" : "hidden"}" id="removeProfilePhotoButton" type="button">${state.language === "sw" ? "Ondoa" : "Remove"}</button>
           </div>
           <p class="profile-photo-name ${photo ? "" : "hidden"}" id="profilePhotoName">${photo ? (state.language === "sw" ? "Picha imechaguliwa" : "Photo selected") : ""}</p>
@@ -2865,20 +2865,6 @@ function profileAvatarMarkup(photo, variant = "") {
 
 document.addEventListener("click", (event) => {
   const trigger = event.target.closest(
-    ".profile-avatar-label, .profile-photo-button, label[for='profilePhotoInput']"
-  );
-
-  if (!trigger) return;
-
-  const input = document.querySelector("#profilePhotoInput");
-  if (!input) return;
-
-  event.preventDefault();
-  input.click();
-});
-
-document.addEventListener("click", (event) => {
-  const trigger = event.target.closest(
     ".profile-avatar-label, .profile-photo-trigger, label[for='profilePhotoInput']"
   );
 
@@ -2888,7 +2874,11 @@ document.addEventListener("click", (event) => {
   if (!input) return;
 
   event.preventDefault();
-  input.click();
+  event.stopPropagation();
+
+  setTimeout(() => {
+    input.click();
+  }, 0);
 });
 
 function escapeAttribute(value) {
