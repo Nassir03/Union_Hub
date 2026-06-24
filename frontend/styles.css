@@ -356,6 +356,18 @@ textarea:focus {
   text-decoration: none;
 }
 
+.leader-read-link,
+.leader-image-link {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.leader-read-link:hover,
+.leader-image-link:hover {
+  opacity: 0.9;
+}
+
 .status-message {
   min-height: 22px;
   margin: 14px 0 0;
@@ -2903,6 +2915,12 @@ label.text-button {
   text-decoration: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
+
+.leader-card a {
+   position: relative;
+   z-index: 12;
+   pointer-events: auto;
+ }
 
 .leader-card:hover,
 .leader-card:focus-visible {
