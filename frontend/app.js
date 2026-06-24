@@ -2790,7 +2790,7 @@ function renderProfile() {
             <p class="profile-identity-email">${escapeAttribute(displayEmail)}</p>
           </div>
           <div class="profile-avatar-actions">
-            <label for="profilePhotoInput" class="secondary-button compact">${changePhotoLabel}</label>
+            <label for="profilePhotoInput" class="secondary-button compact profile-photo-trigger">${changePhotoLabel}</label>
             <button class="text-button ${photo ? "" : "hidden"}" id="removeProfilePhotoButton" type="button">${state.language === "sw" ? "Ondoa" : "Remove"}</button>
           </div>
           <p class="profile-photo-name ${photo ? "" : "hidden"}" id="profilePhotoName">${photo ? (state.language === "sw" ? "Picha imechaguliwa" : "Photo selected") : ""}</p>
@@ -2877,6 +2877,20 @@ document.addEventListener("click", (event) => {
   input.click();
 });
 
+document.addEventListener("click", (event) => {
+  const trigger = event.target.closest(
+    ".profile-avatar-label, .profile-photo-trigger, label[for='profilePhotoInput']"
+  );
+
+  if (!trigger) return;
+
+  const input = document.querySelector("#profilePhotoInput");
+  if (!input) return;
+
+  event.preventDefault();
+  input.click();
+});
+
 function escapeAttribute(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -2935,6 +2949,68 @@ function updateProfilePhotoPreview(photo, fileName = "") {
     avatar.replaceWith(wrapper.firstElementChild);
   });
 }
+
+document.addEventListener("change", async (event) => {
+  const input = event.target;
+
+  if (!input.matches("#profilePhotoInput")) return;
+
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const status = document.querySelector("#profilePhotoStatusMessage");
+
+  try {
+    if (status) {
+      status.textContent =
+        state.language === "sw"
+          ? "Inapakia picha..."
+          : "Uploading photo...";
+    }
+
+    const result = await uploadProfilePhoto(file);
+
+    const photoUrl = result.profile_photo_url || "";
+    const thumbUrl = result.profile_photo_thumb_url || photoUrl;
+
+    state.user.profile_photo_url = photoUrl;
+    state.user.profile_photo_thumb_url = thumbUrl;
+
+    const updatedUser = await apiFetch("/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify({
+        profile_photo_url: photoUrl,
+        profile_photo_thumb_url: thumbUrl,
+      }),
+    });
+
+    state.user = updatedUser;
+
+    localStorage.setItem(
+      "muunganohub_user",
+      JSON.stringify(state.user)
+    );
+
+    updateProfilePhotoPreview(photoUrl, file.name);
+
+    if (status) {
+      status.textContent =
+        state.language === "sw"
+          ? "Picha imepakiwa na kuhifadhiwa."
+          : "Photo uploaded and saved.";
+    }
+  } catch (err) {
+    if (status) {
+      status.textContent =
+        err.message ||
+        (state.language === "sw"
+          ? "Imeshindikana kupakia picha."
+          : "Photo upload failed.");
+    }
+  } finally {
+    input.value = "";
+  }
+});
 
 function mediaThumbMarkup(video, index) {
   const label = state.language === "sw" ? `Somo ${index + 1}` : `Lesson ${index + 1}`;
