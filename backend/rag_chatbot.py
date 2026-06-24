@@ -669,18 +669,52 @@ class RAGChatbot:
         return core_answer
 
     def get_vector_store(self):
-        if not CHROMA_DIR.exists():
+        if CHROMA_DIR.exists():
+            store = Chroma(
+                collection_name=COLLECTION_NAME,
+                persist_directory=str(CHROMA_DIR),
+                embedding_function=self.embeddings,
+            )
+            try:
+                if store._collection.count() > 0:
+                    return store
+            except Exception:
+                pass
+
+        print("[MuunganoHub] Vector DB missing or empty. Building fallback vector store from local knowledge base.")
+
+        fallback_docs = build_knowledge_documents()
+
+        if CHUNKS_FILE.exists():
+            try:
+                chunks = json.loads(CHUNKS_FILE.read_text(encoding="utf-8"))
+                for chunk in chunks:
+                    fallback_docs.append(Document(
+                        page_content=chunk.get("text", ""),
+                        metadata={
+                            "id": chunk.get("id", ""),
+                            "source": chunk.get("source", "unknown"),
+                            "title": chunk.get("title") or chunk.get("source", "unknown"),
+                            "source_url": chunk.get("source_url", ""),
+                            "source_type": chunk.get("source_type", "local"),
+                            "topic": chunk.get("topic", "unknown"),
+                        },
+                    ))
+            except Exception as exc:
+                print(f"[MuunganoHub] Could not load chunks fallback: {exc}")
+
+        if not fallback_docs:
             raise FileNotFoundError(
-                f"Vector database not found: {CHROMA_DIR}. "
-                "Run `python Documents\\process_data.py --skip-pdf` first."
+                "No vector DB and no fallback knowledge documents found."
             )
 
-        return Chroma(
+        return Chroma.from_documents(
+            documents=fallback_docs,
+            embedding=self.embeddings,
             collection_name=COLLECTION_NAME,
             persist_directory=str(CHROMA_DIR),
-            embedding_function=self.embeddings,
         )
-
+        
     def load_keyword_documents(self):
         if not CHUNKS_FILE.exists():
             return build_knowledge_documents()
