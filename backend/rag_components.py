@@ -51,34 +51,50 @@ def get_embeddings():
 
 
 def get_chat_llm():
+    if load_dotenv:
+        load_dotenv(override=True)
+
     if OFFLINE_MODE:
+        print("[MuunganoHub] LLM disabled: OFFLINE_MODE=true")
         return None
 
-    if load_dotenv:
-        load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not USE_LLM:
+        print("[MuunganoHub] LLM disabled: USE_LLM=false")
+        return None
 
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not USE_LLM or not api_key:
+    if not api_key:
+        print("[MuunganoHub] LLM disabled: OPENAI_API_KEY missing")
         return None
 
     from langchain_openai import ChatOpenAI
 
     return ChatOpenAI(
         model=os.getenv("OPENAI_MODEL", LLM_MODEL),
-        temperature=0.1,
+        temperature=0,
         api_key=api_key,
     )
 
 
 def get_openai_client():
+    if load_dotenv:
+        load_dotenv(override=True)
+
     if OFFLINE_MODE:
+        print("[MuunganoHub] OpenAI client disabled: OFFLINE_MODE=true")
         return None
 
-    if load_dotenv:
-        load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not USE_LLM:
+        print("[MuunganoHub] OpenAI client disabled: USE_LLM=false")
+        return None
 
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not USE_LLM or not api_key or OpenAI is None:
+    if not api_key:
+        print("[MuunganoHub] OpenAI client disabled: OPENAI_API_KEY missing")
+        return None
+
+    if OpenAI is None:
+        print("[MuunganoHub] OpenAI package not installed")
         return None
 
     return OpenAI(api_key=api_key)
