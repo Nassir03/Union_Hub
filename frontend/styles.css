@@ -1013,6 +1013,16 @@ label.text-button {
   user-select: none;
 }
 
+.profile-avatar-label,
+.profile-photo-button,
+.profile-photo-trigger,
+label[for="profilePhotoInput"] {
+  cursor: pointer;
+  position: relative;
+  z-index: 30;
+  pointer-events: auto;
+}
+
 .profile-password-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
