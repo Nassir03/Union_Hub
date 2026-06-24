@@ -1640,12 +1640,12 @@ class RAGChatbot:
                     pass
 
         # ── Step 8: LLM domain fallback — Union topic but weak/no retrieved context
-        fallback_answer = self.llm_domain_fallback(question, language)
-        if fallback_answer:
-            self.chat_history.append(HumanMessage(content=question))
-            self.chat_history.append(AIMessage(content=fallback_answer))
-            self.chat_history = self.chat_history[-20:]
-            return self.finalize_answer(fallback_answer, question, language)
+        fallback_answer = None #self.llm_domain_fallback(question, language)
+        #if fallback_answer:
+        #    self.chat_history.append(HumanMessage(content=question))
+        #    self.chat_history.append(AIMessage(content=fallback_answer))
+        #    self.chat_history = self.chat_history[-20:]
+        #    return self.finalize_answer(fallback_answer, question, language)
 
         # ── Step 9: extractive answer from whatever docs we have ──────────────
         if docs:
