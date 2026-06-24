@@ -1,4 +1,4 @@
-const CACHE_NAME = "muunganohub-mobile-v64-links";
+const CACHE_NAME = "muunganohub-mobile-v65-profile-fix";
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const BASE_PATH = SCOPE_PATH === "" ? "" : SCOPE_PATH;
 const withBase = (path) => `${BASE_PATH}${path}`;
