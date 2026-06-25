@@ -16,6 +16,7 @@ function normalizeLocalUrl(rawUrl) {
   if (/^(?:https?:|mailto:|tel:|data:|blob:)/i.test(rawUrl)) return "";
   let clean = rawUrl.split(/[?#]/, 1)[0].replace(/^['"]|['"]$/g, "");
   if (!clean) return "";
+  if (clean.startsWith("/uploads/") || clean.startsWith("/static/uploads/")) return "";
   if (clean.startsWith("/MuunganoHub/")) clean = clean.slice("/MuunganoHub".length);
   if (clean.startsWith("/static/")) clean = clean.slice("/static/".length);
   else if (clean.startsWith("static/")) clean = clean.slice("static/".length);
