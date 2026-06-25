@@ -241,9 +241,13 @@ async def register(request: RegisterRequest):
         user = create_user(request.name, request.email, request.password)
         token = create_session(user["id"])
         record_auth_event(user, "register")
-        send_registration_email(user)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    try:
+        send_registration_email(user)
+    except Exception as exc:
+        print(f"Could not send registration email to {user.get('email', '')}: {exc}")
 
     return AuthResponse(token=token, user=UserResponse(**user))
 
@@ -256,7 +260,10 @@ async def login(request: LoginRequest):
 
     token = create_session(user["id"])
     record_auth_event(user, "login")
-    send_login_email(user)
+    try:
+        send_login_email(user)
+    except Exception as exc:
+        print(f"Could not send login email to {user.get('email', '')}: {exc}")
     return AuthResponse(token=token, user=UserResponse(**user))
 
 
