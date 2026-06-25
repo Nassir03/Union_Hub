@@ -1137,6 +1137,8 @@ function navigateToPage(page) {
   closeFloatingPanels();
 }
 
+window.navigateToPage = navigateToPage;
+
 function bindMainMenuControl() {
   const menuButton = document.querySelector("#mainMenuButton");
   if (!menuButton || menuButton.dataset.menuBound === "true") return;
@@ -1613,6 +1615,7 @@ function updateOfflineProfile({ name, profile_status, profile_photo_url, current
   users[index].name = name.trim();
   users[index].profile_status = profile_status.trim();
   users[index].profile_photo_url = profile_photo_url || "";
+  users[index].profile_photo_thumb_url = profile_photo_url || "";
   saveOfflineUsers(users);
   return publicOfflineUser(users[index]);
 }
@@ -2855,6 +2858,8 @@ function renderProfile() {
   `;
 }
 
+window.renderProfile = renderProfile;
+
 function profileAvatarMarkup(photo, variant = "") {
   const className = `profile-avatar ${variant === "preview" ? "profile-avatar-preview" : ""}`.trim();
   if (photo) {
@@ -2862,24 +2867,6 @@ function profileAvatarMarkup(photo, variant = "") {
   }
   return `<div class="brand-mark ${className} notranslate" translate="no">MH</div>`;
 }
-
-document.addEventListener("click", (event) => {
-  const trigger = event.target.closest(
-    ".profile-avatar-label, .profile-photo-trigger, label[for='profilePhotoInput']"
-  );
-
-  if (!trigger) return;
-
-  const input = document.querySelector("#profilePhotoInput");
-  if (!input) return;
-
-  event.preventDefault();
-  event.stopPropagation();
-
-  setTimeout(() => {
-    input.click();
-  }, 0);
-});
 
 function escapeAttribute(value) {
   return String(value)
@@ -2920,6 +2907,15 @@ async function uploadProfilePhoto(file) {
   return response.json();
 }
 
+function readPhotoAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error(state.language === "sw" ? "Imeshindikana kusoma picha." : "Could not read the photo."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function updateProfilePhotoPreview(photo, fileName = "") {
   const value = document.querySelector("#profilePhotoValue");
   const removeButton = document.querySelector("#removeProfilePhotoButton");
@@ -2939,68 +2935,6 @@ function updateProfilePhotoPreview(photo, fileName = "") {
     avatar.replaceWith(wrapper.firstElementChild);
   });
 }
-
-document.addEventListener("change", async (event) => {
-  const input = event.target;
-
-  if (!input.matches("#profilePhotoInput")) return;
-
-  const file = input.files?.[0];
-  if (!file) return;
-
-  const status = document.querySelector("#profilePhotoStatusMessage");
-
-  try {
-    if (status) {
-      status.textContent =
-        state.language === "sw"
-          ? "Inapakia picha..."
-          : "Uploading photo...";
-    }
-
-    const result = await uploadProfilePhoto(file);
-
-    const photoUrl = result.profile_photo_url || "";
-    const thumbUrl = result.profile_photo_thumb_url || photoUrl;
-
-    state.user.profile_photo_url = photoUrl;
-    state.user.profile_photo_thumb_url = thumbUrl;
-
-    const updatedUser = await apiFetch("/auth/profile", {
-      method: "PATCH",
-      body: JSON.stringify({
-        profile_photo_url: photoUrl,
-        profile_photo_thumb_url: thumbUrl,
-      }),
-    });
-
-    state.user = updatedUser;
-
-    localStorage.setItem(
-      "muunganohub_user",
-      JSON.stringify(state.user)
-    );
-
-    updateProfilePhotoPreview(photoUrl, file.name);
-
-    if (status) {
-      status.textContent =
-        state.language === "sw"
-          ? "Picha imepakiwa na kuhifadhiwa."
-          : "Photo uploaded and saved.";
-    }
-  } catch (err) {
-    if (status) {
-      status.textContent =
-        err.message ||
-        (state.language === "sw"
-          ? "Imeshindikana kupakia picha."
-          : "Photo upload failed.");
-    }
-  } finally {
-    input.value = "";
-  }
-});
 
 function mediaThumbMarkup(video, index) {
   const label = state.language === "sw" ? `Somo ${index + 1}` : `Lesson ${index + 1}`;
@@ -3733,16 +3667,18 @@ document.addEventListener("change", async (event) => {
   const message = document.querySelector("#profilePhotoStatusMessage");
   const file = event.target.files?.[0];
   if (!file) return;
-  if (OFFLINE_MODE || state.token?.startsWith("offline:")) {
-    event.target.value = "";
-    setStatus(message, state.language === "sw" ? "Upakiaji wa picha hauwezekani bila muunganiko." : "Photo upload is not available in offline mode.", "error");
-    return;
-  }
   setStatus(message, state.language === "sw" ? "Inapakia picha..." : "Uploading photo...");
   try {
-    const result = await uploadProfilePhoto(file);
-    const photoUrl = result.profile_photo_url || "";
-    const thumbUrl = result.profile_photo_thumb_url || photoUrl;
+    let photoUrl = "";
+    let thumbUrl = "";
+    if (OFFLINE_MODE || state.token?.startsWith("offline:")) {
+      photoUrl = await readPhotoAsDataUrl(file);
+      thumbUrl = photoUrl;
+    } else {
+      const result = await uploadProfilePhoto(file);
+      photoUrl = result.profile_photo_url || "";
+      thumbUrl = result.profile_photo_thumb_url || photoUrl;
+    }
     updateProfilePhotoPreview(photoUrl, file.name);
     saveProfilePhotoDraft(photoUrl, thumbUrl);
     setStatus(message, state.language === "sw" ? "Picha imepakiwa. Bonyeza Hifadhi profile." : "Photo uploaded. Click Save profile.");
