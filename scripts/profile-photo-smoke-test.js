@@ -112,7 +112,8 @@ async function main() {
           name: "Profile Photo Test",
           email: "profile-photo-test@example.com",
           profile_status: "",
-          profile_photo: ""
+          profile_photo_url: "",
+          profile_photo_thumb_url: ""
         }));
         localStorage.setItem("muunganohub_offline_users", JSON.stringify([{
           id: 1,
@@ -120,7 +121,8 @@ async function main() {
           email: "profile-photo-test@example.com",
           password: "SmokeTest123!",
           profile_status: "",
-          profile_photo: ""
+          profile_photo_url: "",
+          profile_photo_thumb_url: ""
         }]));
       `,
     });
@@ -143,28 +145,27 @@ async function main() {
             checks.push({ name, ok, detail });
             if (!ok) failures.push({ name, detail });
           };
-          const input = document.querySelector("#profilePhoto");
-          const bigButton = document.querySelector("#profilePhotoButton");
-          const chooseButton = document.querySelector("#chooseProfilePhotoButton");
+          const input = document.querySelector("#profilePhotoInput");
+          const bigButton = document.querySelector(".profile-avatar-label");
+          const chooseButton = document.querySelector('label[for="profilePhotoInput"].secondary-button');
           add("profile page active", document.querySelector(".page.active")?.id === "page-profile", {
             active: document.querySelector(".page.active")?.id || "",
           });
           add("photo controls exist", Boolean(input && bigButton && chooseButton));
-          add("file input is hidden", Boolean(input?.hidden) && getComputedStyle(input).display === "none", {
-            hidden: input?.hidden,
+          add("file input is hidden", Boolean(input) && getComputedStyle(input).position === "fixed" && Number.parseInt(getComputedStyle(input).top, 10) < 0, {
+            position: input ? getComputedStyle(input).position : "",
+            top: input ? getComputedStyle(input).top : "",
             display: input ? getComputedStyle(input).display : "",
           });
           add("accepts jpg png webp gif", String(input?.accept || "").includes("image/jpeg")
             && String(input?.accept || "").includes("image/png")
             && String(input?.accept || "").includes("image/webp")
             && String(input?.accept || "").includes("image/gif"), { accept: input?.accept || "" });
-          let clickCount = 0;
-          const oldClick = input.click.bind(input);
-          input.click = () => { clickCount += 1; };
-          bigButton.click();
-          chooseButton.click();
-          input.click = oldClick;
-          add("both add photo controls open picker", clickCount === 2, { clickCount });
+          add("both add photo controls target picker", bigButton?.getAttribute("for") === "profilePhotoInput"
+            && chooseButton?.getAttribute("for") === "profilePhotoInput", {
+            bigTarget: bigButton?.getAttribute("for") || "",
+            chooseTarget: chooseButton?.getAttribute("for") || "",
+          });
 
           const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
           const pngBytes = Uint8Array.from(atob(pngBase64), (char) => char.charCodeAt(0));
@@ -182,8 +183,8 @@ async function main() {
           document.querySelector("#profileForm").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
           await wait(450);
           const savedUser = JSON.parse(localStorage.getItem("muunganohub_user") || "{}");
-          add("profile save persists photo", String(savedUser.profile_photo || "").startsWith("data:image/"), {
-            savedPrefix: String(savedUser.profile_photo || "").slice(0, 24),
+          add("profile save persists photo", String(savedUser.profile_photo_url || "").startsWith("data:image/"), {
+            savedPrefix: String(savedUser.profile_photo_url || "").slice(0, 24),
           });
           window.renderProfile();
           await wait(100);
