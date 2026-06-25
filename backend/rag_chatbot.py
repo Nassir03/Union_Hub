@@ -1570,21 +1570,21 @@ class RAGChatbot:
             return self.finalize_answer(teach_answer, question, language)
 
         # ── Step 5: specific direct knowledge answers ──────────────────────────
-        for handler in (
-            self.direct_union_date_answer,
-            self.direct_why_union_formed_answer,
-            self.direct_tanganyika_zanzibar_union_answer,
-            self.direct_benefits_answer,
-            self.direct_leaders_answer,
-            self.direct_faq_answer,
-            self.direct_union_matters_answer,
-            self.direct_revolution_answer,
-            self.direct_person_answer,
-            self.direct_definition_answer,
-        ):
-            direct = handler(question)
-            if direct:
-                return self.finalize_answer(direct, question, language)
+        #for handler in (
+        #    self.direct_union_date_answer,
+        #    self.direct_why_union_formed_answer,
+        #    self.direct_tanganyika_zanzibar_union_answer,
+        #    self.direct_benefits_answer,
+        #    self.direct_leaders_answer,
+        #    self.direct_faq_answer,
+        #    self.direct_union_matters_answer,
+        #    self.direct_revolution_answer,
+        #    self.direct_person_answer,
+        #    self.direct_definition_answer,
+        #):
+        #    direct = handler(question)
+        #    if direct:
+        #        return self.finalize_answer(direct, question, language)
 
         # ── Step 6: RAG retrieval (vector + keyword, query expansion) ─────────
         standalone_question = self.contextualize_question(question)
