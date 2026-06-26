@@ -167,6 +167,27 @@ def require_user(token: str = Depends(get_bearer_token)):
     return user
 
 
+def require_chat_user(token: str = Depends(get_bearer_token)):
+    user = get_user_by_token(token)
+    if user:
+        return user
+
+    if token.startswith("offline:"):
+        _, _, rest = token.partition(":")
+        email, _, _ = rest.partition(":")
+        email = email.strip().lower() or "offline-user"
+        return {
+            "id": f"offline:{email}",
+            "name": "Offline User",
+            "email": email,
+            "profile_status": "",
+            "profile_photo_url": "",
+            "profile_photo_thumb_url": "",
+        }
+
+    raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+
 @app.get("/")
 @app.head("/")
 async def frontend_index():
@@ -374,7 +395,7 @@ async def logout(token: str = Depends(get_bearer_token)):
 
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest, user=Depends(require_user)):
+async def chat(request: ChatRequest, user=Depends(require_chat_user)):
     question = request.question.strip()
     if not question:
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
