@@ -9,15 +9,13 @@
 ![RAG](https://img.shields.io/badge/AI-RAG-orange.svg)
 ![PWA](https://img.shields.io/badge/PWA-Installable-purple.svg)
 ![Offline](https://img.shields.io/badge/Offline-Supported-success.svg)
-![License](https://img.shields.io/badge/License-Educational-lightgrey.svg)
-
 </p>
 
 ---
 
 # 📖 Overview
 
-MuunganoHub is an AI-powered digital civic education platform designed to teach young people about the Union of Tanganyika and Zanzibar through interactive learning, multilingual AI assistance, and modern web technologies.
+MuunganoHub is an AI-powered digital civic education platform designed to teach young people about the Union of Tanganyika and Zanzibar through interactive learning, multilingual AI assistance and modern web technologies.
 
 The platform combines:
 
@@ -56,15 +54,6 @@ The AI Tutor uses Retrieval-Augmented Generation (RAG) to answer questions using
 * Restricts out-of-scope questions
 * Uses local vector database retrieval
 
-### Example Questions
-
-```text
-Nini maana ya Muungano?
-Muungano wa Tanganyika na Zanzibar ulifanyika lini?
-Faida za Muungano ni zipi?
-Who was Abeid Karume?
-Tell me about the Zanzibar Revolution.
-```
 
 ---
 
@@ -81,7 +70,6 @@ The platform includes:
 * Audio Stories
 * Video Gallery
 * User Profiles
-* Project Pitch Section
 
 ---
 
@@ -91,8 +79,6 @@ MuunganoHub automatically responds in:
 
 * Swahili
 * English
-
-The chatbot mirrors the language used by the learner.
 
 ---
 
@@ -144,19 +130,116 @@ AI Response Generation
 # 🗂️ Project Structure
 
 ```text
-Union_comp/
-│
-├── backend/                 # FastAPI backend + RAG engine
-├── frontend/                # Frontend PWA application
-├── Documents/               # Knowledge base and source documents
-├── database/                # Database schema and dumps
-├── vector_db/               # ChromaDB vector database
-├── reports/                 # Evaluation reports
-├── Dockerfile               # Docker deployment setup
-├── render.yaml              # Render deployment config
-├── Procfile                 # Production startup config
-└── README.md
-```
+Union_Hub/
+|-- README.md
+|-- Procfile                             # Process command for deployment
+|-- Dockerfile                           # Container deployment setup
+|-- render.yaml                          # Render deployment configuration
+|-- runtime.txt                          # Runtime version configuration
+|-- muunganohub_auth.sqlite3             # Local SQLite auth database
+|-- .dockerignore                   
+|-- .gitignore                   
+|-- .env                    
+|
+|-- backend/
+|   |--__init__.py
+|   |-- api.py                           # FastAPI app, routes, static frontend, chat API
+|   |-- auth.py                          # Authentication, users, sessions, password reset
+|   |-- email_service.py                 # SMTP email helper for auth messages
+|   |-- rag_chatbot.py                   # CLI chatbot and RAG answer logic
+|   |-- rag_components.py                # Embeddings, retrieval, source formatting helpers
+|   |-- rag_config.py                    # Shared paths and RAG settings
+|   |-- vector_db.py                     # Builds ChromaDB vector database
+|   |-- union_core_facts.py              # Splits cleaned text into RAG chunks
+|   |-- knowledge_base.py                # Knowledge base helpers
+|   |-- test_rag_quality.py              # Retrieval evaluation metrics
+|   |-- requirements.txt                 # Python dependencies
+|
+|-- frontend/
+|   |-- index.html                       # Main frontend HTML
+|   |-- app.js                           # App state, auth, pages, chatbot, quiz, audio
+|   |-- quiz-bank.js                     # Quiz questions
+|   |-- styles.css                       # Responsive styling
+|   |-- manifest.webmanifest             # PWA manifest
+|   |-- sw.js                            # Service worker
+|   `-- assets/
+|       |-- app-icon.svg
+|       |-- app-icon-192.png
+|       |-- app-icon-512.png
+|       |-- app-maskable-icon.svg
+|       |-- app-maskable-512.png
+|       |-- union-pattern.svg
+|       |-- nyerere-founder.jpg
+|       |-- abeid-karume-founder.webp
+|       |-- samia-suluhu.jpg
+|       |-- hussein-mwinyi.webp
+|       |-- president_kikwete.webp
+|       |-- president_magufuli.webp
+|       |-- president_mkapa.webp
+|       |-- President_Aboud_Jumbe_Mwinyi.jpg
+|       |-- President_Ali_Hassan_Mwinyi.jpg
+|       |-- President_Aman_Abeid_Aman_Karume.jpg
+|       |-- President_Dr_Ali_Mohammed_Shein.jpg
+|       |-- President_Dr_Salmin_Amour_Juma.jpg
+|       `-- President_Sheikh_Idrisa_Abdulwakil.jpg
+|
+|-- Documents/
+|   |-- conv_pdf_to_txt.py               # Converts raw PDFs to cleaned text
+|   |-- process_data.py                  # Full data processing pipeline
+|   |-- raw/                             # Original source PDFs
+|   |   |-- ZANZIBAR-CONSTITUTION-ENGLISH-VERSION.pdf
+|   |   |-- THE_HISTORICAL_INFORMATION_OF_TANZANIA_F.pdf
+|   |   |-- The NAtional Archives Act.pdf
+|   |   |-- mambo22_ya_muungano.pdf
+|   |   |-- Kitabu cha Historia ya Muungano wa Tanganyika na Zanzibar.pdf
+|   |   |-- Katiba_Zanzibar.pdf
+|   |   |-- Katiba_ya_JMT_1977.pdf
+|   |   |-- Katiba ya Jamhuri ya Muungano wa Tanzania _English Version_ 2009.pdf
+|   |   `-- historia_ya_muungano.pdf
+|   |-- cleaned/                         # Cleaned knowledge base text files
+|   |   |-- official_union_source_guide.txt
+|   |   |-- muungano_faq.txt
+|   |   |-- union_faq_youth.txt
+|   |   |-- union_faq_history.txt
+|   |   |-- union_faq_constitution.txt
+|   |   |-- union_public_education_notes.txt
+|   |   |-- union_benefits_for_students.txt
+|   |   |-- union_and_youth.txt
+|   |   |-- union_and_jobs.txt
+|   |   |-- union_and_business.txt
+|   |   |-- union_challenges_summary.txt
+|   |   |-- union_institutions_summary.txt
+|   |   |-- union_important_dates.txt
+|   |   |-- founders_of_union_summary.txt
+|   |   |-- constitution_of_union_summary.txt
+|   |   |-- constitution_notes.txt
+|   |   |-- articles_of_union_summary.txt
+|   |   |-- tanzania_leaders.txt
+|   |   |-- tanganyika_before_union.txt
+|   |   |-- tanganyika_independence_and_union.txt
+|   |   |-- zanzibar_before_union.txt
+|   |   |-- zanzibar_revolution_and_union.txt
+|   |   |-- zanzibar_constitution_summary.txt
+|   |   |-- Katiba_ya_JMT_1977.txt
+|   |   |-- Katiba_Zanzibar.txt
+|   |   |-- historia_ya_muungano.txt
+|   |   |-- mambo22_ya_muungano.txt
+|   |   |-- Kitabu cha Historia ya Muungano wa Tanganyika na Zanzibar.txt
+|   |   |-- ZANZIBAR-CONSTITUTION-ENGLISH-VERSION.txt
+|   |   |-- Katiba ya Jamhuri ya Muungano wa Tanzania _English Version_ 2009.txt
+|   |   |-- THE_HISTORICAL_INFORMATION_OF_TANZANIA_F.txt
+|   |   |-- The NAtional Archives Act.txt
+|   |-- chunks/
+|   |   `-- muungano_chunks.json          # Generated RAG chunks
+|   `-- __pycache__/                     # Generated Python cache files
+|
+|-- database/
+|   |-- README.md
+|   |-- schema.sql                       # Database schema
+|   `-- Muunganohub.sql                  # Database dump/script
+|
+`-- vector_db/
+    |-- chroma.sqlite3                   # ChromaDB database
 
 ---
 
