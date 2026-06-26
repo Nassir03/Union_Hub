@@ -99,12 +99,6 @@ The application can be installed directly from the browser on:
 
 ---
 
-## 💬 WhatsApp Bot Integration
-
-The backend includes WhatsApp Cloud API webhook support, allowing the AI Tutor to operate directly through WhatsApp for wider youth accessibility.
-
----
-
 # 🧠 System Architecture
 
 ## RAG Pipeline
