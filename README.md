@@ -270,22 +270,7 @@ Union_Hub/
 ## Database
 
 * SQLite
-* MySQL (optional)
-
----
-
-# 📊 Preliminary Prototype Results
-
-| Metric                   | Result    |
-| ------------------------ | --------- |
-| Prototype Pass Rate      | 100%      |
-| Sample RAG Evaluation    | 10/10     |
-| Retrieval HitRate@k      | 1.0       |
-| Retrieval MRR@k          | 1.0       |
-| Precision@k              | ~0.99–1.0 |
-| Average Response Latency | ~23.97 ms |
-
-These are preliminary prototype results and will later be expanded using real student evaluation studies and feedback analysis.
+* MySQL 
 
 ---
 
@@ -305,21 +290,12 @@ cd MuunganoHub
 ```bash
 pip install -r backend/requirements.txt
 ```
-
----
-
-## 3. Build Knowledge Base
-
-```bash
-python Documents/process_data.py --skip-pdf
-```
-
 ---
 
 ## 4. Run The Application
 
 ```bash
-python -m uvicorn backend.api:app --host 127.0.0.1 --port 8001
+python -m uvicorn backend.api:app --reload --port 8001
 ```
 
 Open:
@@ -336,29 +312,19 @@ http://127.0.0.1:8001
 python backend/rag_chatbot.py
 ```
 
-Exit using:
-
-```text
-exit
-```
-
 ---
 
 # 🔧 Environment Variables
 
-Create a `.env` file:
-
 ```env
 OFFLINE_MODE=true
 AUTH_BACKEND=sqlite
-
 SEND_AUTH_EMAILS=true
-
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_gmail_app_password
-SMTP_FROM_EMAIL=your_email@gmail.com
+SMTP_USERNAME=abdullnassirshaibhassan@gmail.com
+SMTP_PASSWORD=gmail_app_password
+SMTP_FROM_EMAIL=abdullnassirshaibhassan@gmail.com
 SMTP_FROM_NAME=MuunganoHub
 ```
 
@@ -390,35 +356,7 @@ MuunganoHub supports deployment using:
 * Render
 * Docker
 * GitHub
-* VPS Hosting
 * Local Servers
-
-## Render Start Command
-
-```text
-uvicorn backend.api:app --host 0.0.0.0 --port $PORT
-```
-
----
-
-# 💬 WhatsApp Bot Setup
-
-The backend includes:
-
-```text
-GET  /whatsapp/status
-GET  /whatsapp/webhook
-POST /whatsapp/webhook
-```
-
-## Required Environment Variables
-
-```env
-WHATSAPP_VERIFY_TOKEN=your_verify_token
-WHATSAPP_ACCESS_TOKEN=your_access_token
-WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
-WHATSAPP_GRAPH_VERSION=v20.0
-```
 
 ---
 
@@ -474,72 +412,3 @@ Planned future work includes:
 * Expanded multilingual support
 
 ---
-
-# 📸 Screenshots
-
-```text
-screenshots/
-├── home.png
-├── chatbot.png
-├── timeline.png
-├── dashboard.png
-└── quiz.png
-```
-
-Example:
-
-```md
-![Home](screenshots/home.png)
-```
-
----
-
-# 🔗 Live Demo
-
-Frontend:
-
-```text
-https://your-site-url
-```
-
-API Docs:
-
-```text
-https://your-api-url/docs
-```
-
----
-
-# 👨‍💻 Author
-
-ABDULLNASSIR HASSAN
-
-Indian Institute of Technology Madras – Zanzibar Campus
-
----
-
-# 📜 License
-
-This project is intended for educational and research purposes.
-
----
-
-# 🙌 Acknowledgements
-
-Special thanks to:
-
-* Elimu ya Muungano Ubunifu Challenge
-* IIT Madras Zanzibar Campus
-* Open-source AI communities
-* Educational and historical contributors
-
----
-
-# ⭐ Support
-
-If you found this project useful:
-
-* Star the repository
-* Share the project
-* Contribute improvements
-* Support civic education innovation
