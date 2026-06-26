@@ -111,6 +111,7 @@ Union_comp/
 |-- uvicorn.err.log                      # Uvicorn error log
 |
 |-- backend/
+|   |--__init__.py
 |   |-- api.py                           # FastAPI app, routes, static frontend, chat API
 |   |-- auth.py                          # Authentication, users, sessions, password reset
 |   |-- email_service.py                 # SMTP email helper for auth messages
@@ -118,12 +119,9 @@ Union_comp/
 |   |-- rag_components.py                # Embeddings, retrieval, source formatting helpers
 |   |-- rag_config.py                    # Shared paths and RAG settings
 |   |-- vector_db.py                     # Builds ChromaDB vector database
-|   |-- chunks_documents.py              # Splits cleaned text into RAG chunks
-|   |-- fetch_reference_sources.py       # Optional web reference fetcher
-|   |-- ingest.py                        # Ingestion wrapper
+|   |-- union_core_facts.py              # Splits cleaned text into RAG chunks
 |   |-- knowledge_base.py                # Knowledge base helpers
-|   |-- evaluation.py                    # Retrieval evaluation metrics
-|   |-- evaluate.py                      # Evaluation wrapper
+|   |-- test_rag_quality.py              # Retrieval evaluation metrics
 |   |-- requirements.txt                 # Python dependencies
 |   `-- __pycache__/                     # Generated Python cache files
 |
@@ -201,7 +199,6 @@ Union_comp/
 |   |   |-- Katiba ya Jamhuri ya Muungano wa Tanzania _English Version_ 2009.txt
 |   |   |-- THE_HISTORICAL_INFORMATION_OF_TANZANIA_F.txt
 |   |   |-- The NAtional Archives Act.txt
-|   |   `-- web_references/               # Optional downloaded web references
 |   |-- chunks/
 |   |   `-- muungano_chunks.json          # Generated RAG chunks
 |   `-- __pycache__/                     # Generated Python cache files
@@ -211,15 +208,8 @@ Union_comp/
 |   |-- schema.sql                       # Database schema
 |   `-- Muunganohub.sql                  # Database dump/script
 |
-|-- reports/
-|   |-- rag_eval_report.json             # RAG answer evaluation report
-|   |-- rag_eval_report.csv
-|   |-- retrieval_eval_report.json       # Retrieval metrics report
-|   `-- retrieval_eval_report.csv
-|
 `-- vector_db/
     |-- chroma.sqlite3                   # ChromaDB database
-    `-- <generated-vector-collection>/   # Generated Chroma vector files
 ```
 
 ## How The RAG System Works
@@ -477,27 +467,18 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your_sender_email@gmail.com
 SMTP_PASSWORD=your_gmail_app_password
-SMTP_FROM_EMAIL=your_sender_email@gmail.com
+SMTP_FROM_EMAIL=abdullnassirshaibhassan@gmail.com
 SMTP_FROM_NAME=MuunganoHub
-```
-
-5. Deploy and test:
-
-```text
-https://YOUR_RENDER_URL/health
-https://YOUR_RENDER_URL/static/manifest.webmanifest
-https://YOUR_RENDER_URL/sw.js
 ```
 
 ## Database Options
 
-For demos and competitions:
 
 ```env
 AUTH_BACKEND=sqlite
 ```
 
-For larger production use:
+For larger production:
 
 ```env
 AUTH_BACKEND=mysql
@@ -528,54 +509,12 @@ Print results without saving report files:
 python backend\evaluation.py --k 1 3 5 --no-report
 ```
 
-Reports are saved to:
-
-```text
-reports/retrieval_eval_report.json
-reports/retrieval_eval_report.csv
-reports/rag_eval_report.json
-reports/rag_eval_report.csv
-```
-
 Retrieval metrics:
 
 - `Recall@k`: how many expected relevant sources were found in the top-k results.
 - `Precision@k`: how many retrieved top-k results are relevant.
 - `Hit Rate@k`: whether at least one relevant source appears in the top-k results.
 - `MRR@k`: how early the first relevant result appears.
-
-## Proposal Documents
-
-The competition proposal work is included in this repository:
-
-```text
-Proposal.txt           # Swahili proposal
-Proposal_Eng.txt       # English proposal
-Proposal_Overleaf.tex  # Overleaf-ready LaTeX proposal
-```
-
-The Overleaf proposal includes:
-
-- Executive summary.
-- Challenge alignment and strategic fit.
-- Problem statement.
-- Proposed solution.
-- Proposal scope.
-- Objectives.
-- Target users.
-- Innovation.
-- Unique value proposition.
-- Technical methodology.
-- Preliminary prototype and test results.
-- Implementation plan.
-- Monitoring and evaluation plan.
-- Expected impact.
-- Sustainability.
-- Budget estimate.
-- Team capacity.
-- Risks and mitigation.
-- Scaling plan.
-- Why MuunganoHub deserves to win.
 
 ## Common Commands
 
