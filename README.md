@@ -274,7 +274,7 @@ Union_Hub/
 ## 1. Clone Repository
 
 ```bash
-git clone [https://github.com/YOUR_USERNAME/Union_Hub.git](https://github.com/Nassir03/Union_Hub.git)
+git clone [https://github.com/Nassir03/Union_Hub.git]
 cd Union_Hub
 ```
 
