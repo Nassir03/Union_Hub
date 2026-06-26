@@ -22,14 +22,3 @@ MYSQL_DATABASE=muunganohub
 
 The backend also creates the database tables automatically on startup if the
 MySQL user has permission.
-
-## Formspree Registration Email
-
-Add your Formspree endpoint to `.env`:
-
-```env
-FORMSPREE_ENDPOINT=https://formspree.io/f/your_form_id
-```
-
-When a user registers, the backend sends a welcome message through Formspree.
-If `FORMSPREE_ENDPOINT` is empty, registration still works and email sending is skipped.
