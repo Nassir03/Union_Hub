@@ -131,7 +131,7 @@ def _send(to_email: str, subject: str, html: str) -> bool:
 # ── HTML template ─────────────────────────────────────────────────────────────
 
 def _card(title: str, subtitle: str, body: str) -> str:
-    url = os.getenv("APP_URL", "http://127.0.0.1:8001").rstrip("/")
+    url = os.getenv("APP_URL", "http://127.0.0.1:8000").rstrip("/")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
