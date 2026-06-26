@@ -668,6 +668,68 @@ class RAGChatbot:
             return f"{core_answer}\n\n{source_heading}:\n{sources_text}"
         return core_answer
 
+    def rag_llm_answer(self, question, language, docs=None):
+        """
+        Prefer the live RAG + LLM path in online mode.
+
+        Curated/core answers remain as fallback, but when the LLM is configured
+        this method first asks the model to answer only from retrieved context.
+        """
+        if OFFLINE_MODE or not USE_LLM:
+            return None
+
+        standalone_question = self.contextualize_question(question)
+        docs = docs if docs is not None else self.retrieve(standalone_question)
+        if not docs or not enough_context(standalone_question, docs):
+            return None
+
+        source_heading = "Sources" if language == "en" else "Vyanzo"
+
+        try:
+            llm_result = build_answer_from_context(
+                question=question,
+                docs=[doc.page_content for doc in docs],
+                metas=[doc.metadata for doc in docs],
+            )
+        except Exception:
+            llm_result = None
+
+        if llm_result:
+            answer = llm_result["answer"]
+            if answer and re.search(r"\[\d+\]", answer):
+                lower_answer = answer.lower()
+                if "sources:" in lower_answer or "vyanzo:" in lower_answer:
+                    answer_with_sources = answer
+                else:
+                    answer_with_sources = f"{answer}\n\n{source_heading}:\n{format_sources(docs)}"
+                self.chat_history.append(HumanMessage(content=question))
+                self.chat_history.append(AIMessage(content=answer))
+                self.chat_history = self.chat_history[-20:]
+                return self.finalize_answer(answer_with_sources, question, language)
+
+        if self.llm:
+            chain = RAG_PROMPT | self.llm | StrOutputParser()
+            try:
+                answer = chain.invoke({
+                    "context": format_docs(docs),
+                    "chat_history": self.chat_history,
+                    "question": question,
+                })
+                if answer and len(answer.strip()) > 30:
+                    lower_answer = answer.lower()
+                    if "sources:" in lower_answer or "vyanzo:" in lower_answer:
+                        answer_with_sources = answer
+                    else:
+                        answer_with_sources = f"{answer}\n\n{source_heading}:\n{format_sources(docs)}"
+                    self.chat_history.append(HumanMessage(content=question))
+                    self.chat_history.append(AIMessage(content=answer))
+                    self.chat_history = self.chat_history[-20:]
+                    return self.finalize_answer(answer_with_sources, question, language)
+            except Exception:
+                return None
+
+        return None
+
     def get_vector_store(self):
         if CHROMA_DIR.exists():
             store = Chroma(
@@ -1557,7 +1619,13 @@ class RAGChatbot:
         if not is_domain_question(question):
             return refusal_message(language)
 
-        # ── Step 3: trusted core facts via intent classifier (no LLM needed) ─
+        standalone_question = self.contextualize_question(question)
+        docs = self.retrieve(standalone_question)
+        rag_answer = self.rag_llm_answer(question, language, docs)
+        if rag_answer:
+            return rag_answer
+
+        # ── Step 3: trusted core facts via intent classifier (fallback/no LLM) ─
         intent = classify_union_intent(question)
         if intent != "unrelated":
             intent_answer = self.hybrid_answer(question, intent)
@@ -1586,11 +1654,7 @@ class RAGChatbot:
         #    if direct:
         #        return self.finalize_answer(direct, question, language)
 
-        # ── Step 6: RAG retrieval (vector + keyword, query expansion) ─────────
-        standalone_question = self.contextualize_question(question)
-        docs = self.retrieve(standalone_question)
-
-        # ── Step 7: LLM with retrieved context (best path when docs are good) ─
+        # ── Step 7: LLM with retrieved context fallback ─
         if docs and enough_context(standalone_question, docs):
             llm_result = None
             try:
@@ -1699,3 +1763,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
