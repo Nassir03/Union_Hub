@@ -1,4 +1,4 @@
-const CACHE_NAME = "muunganohub-mobile-v65-profile-fix";
+const CACHE_NAME = "muunganohub-mobile-v67";
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const BASE_PATH = SCOPE_PATH === "" ? "" : SCOPE_PATH;
 const withBase = (path) => `${BASE_PATH}${path}`;
@@ -7,7 +7,7 @@ const APP_SHELL = [
   withBase("/index.html"),
   withBase("/styles.css?v=20260619-profile-photo"),
   withBase("/quiz-bank.js?v=20260618g"),
-  withBase("/app.js?v=20260623"),
+  withBase("/app.js?v=20260624b"),
   withBase("/manifest.webmanifest"),
   withBase("/assets/app-icon-192.png"),
   withBase("/assets/app-icon-512.png"),
