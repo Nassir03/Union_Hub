@@ -111,7 +111,8 @@ async function main() {
           name: "History Test",
           email: "history-test@example.com",
           profile_status: "",
-          profile_photo: ""
+          profile_photo_url: "",
+          profile_photo_thumb_url: ""
         }));
       `,
     });
