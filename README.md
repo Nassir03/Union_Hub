@@ -234,6 +234,7 @@ Union_Hub/
 |
 `-- vector_db/
     |-- chroma.sqlite3                   # ChromaDB database
+```
 
 ---
 
