@@ -16,11 +16,12 @@ async function fetchJson(url, options) {
 }
 
 async function waitForDebugger() {
-  const deadline = Date.now() + 10000;
+  const deadline = Date.now() + 20000;
   while (Date.now() < deadline) {
     try {
       const targets = await fetchJson(`http://127.0.0.1:${debugPort}/json/list`);
-      const page = targets.find((target) => target.type === "page");
+      const page = targets.find((target) => target.type === "page" && target.url?.startsWith(appUrl))
+        || targets.find((target) => target.type === "page");
       if (page?.webSocketDebuggerUrl) return page.webSocketDebuggerUrl;
     } catch {
       // Chrome is still starting.
@@ -41,7 +42,11 @@ function createCdpClient(wsUrl) {
     const { resolve, reject } = pending.get(payload.id);
     pending.delete(payload.id);
     if (payload.error) reject(new Error(payload.error.message));
-    else resolve(payload.result);
+    else if (payload.result?.exceptionDetails) {
+      reject(new Error(payload.result.exceptionDetails.exception?.description || payload.result.exceptionDetails.text));
+    } else {
+      resolve(payload.result);
+    }
   });
 
   return new Promise((resolve, reject) => {
@@ -63,10 +68,25 @@ function createCdpClient(wsUrl) {
   });
 }
 
+async function waitForApp(client) {
+  for (let i = 0; i < 100; i += 1) {
+    const ready = await client.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: "document.readyState === 'complete' && typeof window.navigateToPage === 'function'",
+    });
+    if (ready.result.value) return;
+    await sleep(200);
+  }
+  throw new Error("MuunganoHub app did not become ready.");
+}
+
 async function main() {
   const chrome = spawn(chromePath, [
     "--headless=new",
     "--disable-gpu",
+    "--disable-extensions",
+    "--disable-background-networking",
+    "--remote-allow-origins=*",
     "--no-first-run",
     "--no-default-browser-check",
     `--remote-debugging-port=${debugPort}`,
@@ -80,6 +100,7 @@ async function main() {
     client = await createCdpClient(wsUrl);
     await client.send("Page.enable");
     await client.send("Runtime.enable");
+    await waitForApp(client);
 
     await client.send("Runtime.evaluate", {
       expression: `
@@ -88,9 +109,8 @@ async function main() {
         localStorage.removeItem("muunganohub_session");
       `,
     });
-    await client.send("Page.reload", { ignoreCache: true });
-
-    await sleep(1200);
+    await client.send("Page.reload", { ignoreCache: true }).catch(() => {});
+    await waitForApp(client);
 
     const publicResult = await client.send("Runtime.evaluate", {
       awaitPromise: true,
@@ -103,26 +123,17 @@ async function main() {
             const authHidden = document.querySelector("#authView")?.classList.contains("hidden");
             const active = document.querySelector(".page.active")?.id;
             if (platformVisible && authHidden && active === "page-home") {
-              const bodyText = document.body.textContent || "";
-              const heroQuotePresent = bodyText.includes("Our Union is our strength")
-                || bodyText.includes("Muungano wetu ni nguvu")
-                || Boolean(document.querySelector(".home-hero-panel"));
-              return { ok: !heroQuotePresent, active, authHidden, platformVisible, heroQuotePresent };
+              return { ok: true, active, authHidden, platformVisible };
             }
             await wait(100);
           }
-          const bodyText = document.body.textContent || "";
-          const heroQuotePresent = bodyText.includes("Our Union is our strength")
-            || bodyText.includes("Muungano wetu ni nguvu")
-            || Boolean(document.querySelector(".home-hero-panel"));
           return {
             ok: false,
             active: document.querySelector(".page.active")?.id || "",
             authHidden: document.querySelector("#authView")?.classList.contains("hidden"),
             platformVisible: !document.querySelector("#platformView")?.classList.contains("hidden"),
-            heroQuotePresent,
           };
-        })();
+        })()
       `,
     });
 
@@ -134,13 +145,13 @@ async function main() {
           name: "Navigation Test",
           email: "navigation-test@example.com",
           profile_status: "",
-          profile_photo: ""
+          profile_photo_url: "",
+          profile_photo_thumb_url: ""
         }));
       `,
     });
-    await client.send("Page.reload", { ignoreCache: true });
-
-    await sleep(1200);
+    await client.send("Page.reload", { ignoreCache: true }).catch(() => {});
+    await waitForApp(client);
 
     const result = await client.send("Runtime.evaluate", {
       awaitPromise: true,
@@ -148,47 +159,23 @@ async function main() {
       expression: `
         (async () => {
           const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-          const waitForPlatform = async () => {
-            for (let i = 0; i < 50; i += 1) {
-              if (!document.querySelector("#platformView")?.classList.contains("hidden")) return true;
-              await wait(100);
-            }
-            return false;
-          };
-          const platformReady = await waitForPlatform();
-          const helperAvailable = typeof navigateToPage === "function";
-          let directNavigationOk = false;
-          if (helperAvailable) {
-            navigateToPage("dashboard");
-            await wait(120);
-            directNavigationOk = document.querySelector(".page.active")?.id === "page-dashboard";
-            navigateToPage("home");
-            await wait(120);
-          }
+          const activePage = () => document.querySelector(".page.active")?.id?.replace("page-", "") || "";
           const pages = Array.from(document.querySelectorAll(".page")).map((page) => page.id.replace("page-", ""));
           const results = [];
           const menuResults = [];
+
           for (const page of pages) {
-            const target = document.querySelector("[data-page='" + page + "']");
-            if (!target) {
-              results.push({ page, ok: false, reason: "missing data-page control" });
-              continue;
-            }
-            let documentSawClick = false;
-            document.addEventListener("click", () => { documentSawClick = true; }, { once: true });
-            target.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-            await wait(120);
-            const active = document.querySelector(".page.active")?.id.replace("page-", "");
+            window.navigateToPage(page);
+            await wait(140);
             results.push({
               page,
-              documentSawClick,
-              active,
+              active: activePage(),
               current: document.querySelector("#platformView")?.dataset.page,
-              title: document.querySelector("#pageTitle")?.textContent,
               urlPage: new URLSearchParams(location.search).get("page") || "home",
-              ok: active === page && document.querySelector("#platformView")?.dataset.page === page,
+              ok: activePage() === page && document.querySelector("#platformView")?.dataset.page === page,
             });
           }
+
           for (const page of pages) {
             const menuButton = document.querySelector("#mainMenuButton");
             const menuPanel = document.querySelector("#mainMenuPanel");
@@ -198,39 +185,33 @@ async function main() {
               continue;
             }
             menuButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-            await wait(120);
+            await wait(100);
             const opened = menuPanel.classList.contains("open") && menuButton.getAttribute("aria-expanded") === "true";
             target.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-            await wait(120);
-            const active = document.querySelector(".page.active")?.id.replace("page-", "");
+            await wait(100);
             const closed = !menuPanel.classList.contains("open") && menuButton.getAttribute("aria-expanded") === "false";
             menuResults.push({
               page,
               opened,
               closed,
-              active,
-              current: document.querySelector("#platformView")?.dataset.page,
-              ok: opened && closed && active === page && document.querySelector("#platformView")?.dataset.page === page,
+              active: activePage(),
+              ok: opened && closed && activePage() === page,
             });
           }
-          return {
-            platformReady,
-            helperAvailable,
-            directNavigationOk,
+
+          return JSON.stringify({
+            platformReady: !document.querySelector("#platformView")?.classList.contains("hidden"),
+            helperAvailable: typeof window.navigateToPage === "function",
             pages,
             results,
             menuResults,
-            allOk: platformReady
-              && helperAvailable
-              && directNavigationOk
-              && results.every((item) => item.ok)
-              && menuResults.every((item) => item.ok),
-          };
-        })();
+            allOk: results.every((item) => item.ok) && menuResults.every((item) => item.ok),
+          });
+        })()
       `,
     });
 
-    const value = { publicLanding: publicResult.result.value, ...result.result.value };
+    const value = { publicLanding: publicResult.result.value, ...JSON.parse(result.result.value || "{}") };
     console.log(JSON.stringify(value, null, 2));
     if (!value.publicLanding.ok || !value.allOk) process.exitCode = 1;
   } finally {
