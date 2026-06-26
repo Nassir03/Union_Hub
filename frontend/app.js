@@ -936,7 +936,7 @@ const trustSignals = {
 const offlineAnswers = {
   sw: [
     {
-      keys: ["muungano ni nini", "nini muungano", "maana ya muungano", "muungano maana", "muungano ni", "unganisho ni nini", "jamhuri ya muungano ni nini", "muungano wa tanganyika", "tanganyika na zanzibar waliungana", "muungano ulikuwa nini", "muungano unamaanisha nini"],
+      keys: ["muungano ni nini", "nini muungano", "maana ya muungano", "muungano maana", "muungano ni", "nifundishe kuhusu muungano", "fundisha kuhusu muungano", "jifunze kuhusu muungano", "unganisho ni nini", "jamhuri ya muungano ni nini", "muungano wa tanganyika", "tanganyika na zanzibar waliungana", "muungano ulikuwa nini", "muungano unamaanisha nini"],
       answer: "Muungano ni makubaliano ya kisiasa na kikatiba yaliyounganisha Tanganyika na Zanzibar na kuunda Jamhuri ya Muungano wa Tanzania. Kwa Tanzania, Muungano ulianza rasmi tarehe 26 Aprili 1964 baada ya Hati za Muungano kusainiwa tarehe 22 Aprili 1964.\n\nVyanzo:\n[1] Historia ya Muungano wa Tanganyika na Zanzibar\n[2] Katiba ya Jamhuri ya Muungano wa Tanzania ya 1977",
     },
     {
@@ -982,7 +982,7 @@ const offlineAnswers = {
   ],
   en: [
     {
-      keys: ["what is union", "meaning of union", "what is the union", "define union", "united republic", "what is tanzania"],
+      keys: ["what is union", "meaning of union", "what is the union", "define union", "teach me about union", "teach me about the union", "learn about union", "learn about the union", "explain union", "explain the union", "united republic", "what is tanzania"],
       answer: "The Union is the political and constitutional arrangement that joined Tanganyika and Zanzibar to form the United Republic of Tanzania. It formally began on 26 April 1964 after the Articles of Union were signed on 22 April 1964.\n\nSources:\n[1] History of the Union of Tanganyika and Zanzibar\n[2] Constitution of the United Republic of Tanzania, 1977",
     },
     {
@@ -1536,6 +1536,22 @@ async function apiRequest(path, options = {}) {
 
 function canUseOfflineFallback(error) {
   return Boolean(error.offline || /mysql|database|not configured|not running/i.test(error.message || ""));
+}
+
+async function backendIsReachable() {
+  if (!navigator.onLine) return false;
+  try {
+    await apiRequest("/health", { method: "GET" });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function onlineLoginRequiredMessage() {
+  return state.language === "sw"
+    ? "Backend iko online, lakini kipindi chako cha offline hakiwezi kutumia RAG/LLM. Tafadhali ingia tena ili kupata majibu sahihi kutoka AI Tutor."
+    : "The backend is online, but your offline session cannot use RAG/LLM. Please log in again to get accurate AI Tutor answers.";
 }
 
 function offlineUsers() {
@@ -3106,7 +3122,7 @@ async function verifySession() {
     return;
   }
   if (state.token.startsWith("offline:")) {
-    OFFLINE_MODE = true;
+    OFFLINE_MODE = !(await backendIsReachable());
     showPlatform();
     return;
   }
@@ -3116,13 +3132,16 @@ async function verifySession() {
     state.user = user;
     localStorage.setItem("muunganohub_user", JSON.stringify(user));
     showPlatform();
-  } catch {
-    if (state.user) {
+  } catch (error) {
+    if (error.offline && state.user) {
       OFFLINE_MODE = true;
       showPlatform();
     } else {
       clearAuth();
-      showPublicLanding();
+      showAuth();
+      if (error.status === 401) {
+        setStatus(authStatus, state.language === "sw" ? "Kipindi chako kimeisha. Tafadhali ingia tena." : "Your session expired. Please log in again.", "error");
+      }
     }
   }
 }
@@ -3719,7 +3738,21 @@ chatForm.addEventListener("submit", async (event) => {
     appendMessage("assistant", payload.answer);
     setStatus(chatStatus, "");
   } catch (error) {
-    if (error.offline || OFFLINE_MODE || (state.token?.startsWith("offline:") && error.status === 401)) {
+    if (state.token?.startsWith("offline:") && error.status === 401 && await backendIsReachable()) {
+      const message = onlineLoginRequiredMessage();
+      clearAuth();
+      showAuth();
+      appendMessage("assistant", message);
+      setStatus(authStatus, message, "error");
+    } else if (error.status === 401 && await backendIsReachable()) {
+      const message = state.language === "sw"
+        ? "Kipindi chako kimeisha. Tafadhali ingia tena ili AI Tutor itumie RAG/LLM."
+        : "Your session expired. Please log in again so AI Tutor can use RAG/LLM.";
+      clearAuth();
+      showAuth();
+      appendMessage("assistant", message);
+      setStatus(authStatus, message, "error");
+    } else if (error.offline || OFFLINE_MODE) {
       OFFLINE_MODE = true;
       appendMessage("assistant", offlineChatAnswer(question));
       setStatus(chatStatus, tr("offlineMode"));
